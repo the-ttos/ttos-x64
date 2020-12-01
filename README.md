@@ -1,1 +1,1 @@
-# ttos-x64-efi
+# ttos-x64-uefi
