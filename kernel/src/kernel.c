@@ -1,3 +1,4 @@
-int _start() {
+
+int _start(){
     return 123;
 }
