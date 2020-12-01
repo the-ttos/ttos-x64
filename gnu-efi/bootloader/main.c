@@ -4,6 +4,34 @@
 
 typedef unsigned long long size_t;
 
+typedef struct {
+	void *address;
+	size_t size;
+	unsigned width;
+	unsigned height;
+	unsigned pixelsPerScanline;
+} frameBuffer;
+
+frameBuffer f;
+frameBuffer *InitializeGOP() {
+	EFI_GUID gopGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
+	EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
+	EFI_STATUS status;
+
+	status = uefi_call_wrapper(BS->LocateProtocol, 3, &gopGuid, NULL, (void**)&gop);
+	if(EFI_ERROR(status)) {
+		Print(L"Unable to locate GOP.\n\r");
+		return NULL;
+	} else Print(L"GOP located successfully.\n\r");
+
+	f.address = (void*)gop->Mode->FrameBufferBase;
+	f.size = gop->Mode->FrameBufferSize;
+	f.width = gop->Mode->Info->HorizontalResolution;
+	f.height = gop->Mode->Info->VerticalResolution;
+	f.pixelsPerScanline = gop->Mode->Info->PixelsPerScanLine;
+	return &f;
+}
+
 EFI_FILE* LoadFile(EFI_FILE* Directory, CHAR16* Path, EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable){
 	EFI_FILE* LoadedFile;
 
@@ -22,7 +50,6 @@ EFI_FILE* LoadFile(EFI_FILE* Directory, CHAR16* Path, EFI_HANDLE ImageHandle, EF
 		return NULL;
 	}
 	return LoadedFile;
-
 }
 
 int memcmp(const void* aptr, const void* bptr, size_t n){
@@ -105,9 +132,16 @@ EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
 	Print(L"Kernel loaded.\n\r");
 	
+	frameBuffer *newBuffer = InitializeGOP();
 	int (*KernelStart)() = ((__attribute__((sysv_abi)) int (*)() ) header.e_entry);
 
-	Print(L"%d\r\n", KernelStart());
+	Print(L"Base: 0x%x\n\rSize: 0x%x\n\rWidth: %d\n\rHeight: %d\n\rPixelsPerScanline: %d\n\r",
+	newBuffer->address,
+	newBuffer->size,
+	newBuffer->width,
+	newBuffer->height,
+	newBuffer->pixelsPerScanline);
+	//Print(L"%d\r\n", KernelStart());
 
 	return EFI_SUCCESS; // Exit the UEFI application
 }
