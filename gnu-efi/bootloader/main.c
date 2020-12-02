@@ -66,12 +66,8 @@ EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 	Print(L"Test \n\r");
 
 	EFI_FILE* Kernel = LoadFile(NULL, L"kernel.elf", ImageHandle, SystemTable);
-	if (Kernel == NULL){
-		Print(L"Unable to load kernel.\n\r");
-	}
-	else{
-		Print(L"Kernel loaded successfully.\n\r");
-	}
+	if (Kernel == NULL) Print(L"Unable to load kernel.\n\r");
+	else Print(L"Kernel loaded successfully.\n\r");
 
 	Elf64_Ehdr header;
 	{
@@ -92,14 +88,8 @@ EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 		header.e_type != ET_EXEC ||
 		header.e_machine != EM_X86_64 ||
 		header.e_version != EV_CURRENT
-	)
-	{
-		Print(L"Bad kernel format.\r\n");
-	}
-	else
-	{
-		Print(L"Kernel header checked successfully.\r\n");
-	}
+	) Print(L"Bad kernel format.\r\n");
+	else Print(L"Kernel header checked successfully.\r\n");
 
 	Elf64_Phdr* phdrs;
 	{
@@ -114,7 +104,6 @@ EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 		(char*)phdr < (char*)phdrs + header.e_phnum * header.e_phentsize;
 		phdr = (Elf64_Phdr*)((char*)phdr + header.e_phentsize)
 	)
-	{
 		switch (phdr->p_type){
 			case PT_LOAD:
 			{
@@ -128,19 +117,26 @@ EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 				break;
 			}
 		}
-	}
 
 	Print(L"Kernel loaded.\n\r");
 	
 	frameBuffer *newBuffer = InitializeGOP();
 	int (*KernelStart)() = ((__attribute__((sysv_abi)) int (*)() ) header.e_entry);
 
-	Print(L"Base: 0x%x\n\rSize: 0x%x\n\rWidth: %d\n\rHeight: %d\n\rPixelsPerScanline: %d\n\r",
+	Print(L"TEST\n\rBase: 0x%x\n\rSize: 0x%x\n\rWidth: %d\n\rHeight: %d\n\rPixelsPerScanline: %d\n\r",
 	newBuffer->address,
 	newBuffer->size,
 	newBuffer->width,
 	newBuffer->height,
 	newBuffer->pixelsPerScanline);
+
+	unsigned y = 50;
+	unsigned BBP = 4;
+
+	for(unsigned x = 0; x < newBuffer->width / 2 * BBP; x++)
+		*(unsigned*)(x + (y * newBuffer->pixelsPerScanline * BBP)
+			+ newBuffer->address) = 0xffffffff;
+
 	//Print(L"%d\r\n", KernelStart());
 
 	return EFI_SUCCESS; // Exit the UEFI application
