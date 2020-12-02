@@ -12,6 +12,20 @@ typedef struct {
 	unsigned pixelsPerScanline;
 } frameBuffer;
 
+typedef struct {
+	unsigned char magic[2];
+	unsigned char mode;
+	unsigned char size;
+} psf1Header;
+
+#define PSF1_MAGIC0 0x36
+#define PSF1_MAGIC1 0x04
+
+typedef struct {
+	psf1Header *header;
+	void *glyphs;
+} psf1Font;
+
 frameBuffer f;
 frameBuffer *InitializeGOP() {
 	EFI_GUID gopGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
@@ -50,6 +64,35 @@ EFI_FILE* LoadFile(EFI_FILE* Directory, CHAR16* Path, EFI_HANDLE ImageHandle, EF
 		return NULL;
 	}
 	return LoadedFile;
+}
+
+psf1Font *LoadPSF1Font(EFI_FILE* Directory, CHAR16* Path, EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
+	EFI_FILE *font = LoadFile(Directory, Path, ImageHandle, SystemTable);
+	if(!font) return NULL;
+
+	psf1Header *header;
+	SystemTable->BootServices->AllocatePool(EfiLoaderData, sizeof(psf1Header), (void**)&header);
+	UINTN size = sizeof(psf1Header);
+	font->Read(font, &size, header);
+
+	if(header->magic[0] != PSF1_MAGIC0 || header->magic[1] != PSF1_MAGIC1) return NULL;
+
+	UINTN glyphsSize;
+	if(header->mode) glyphsSize = header->size * 512;
+	else glyphsSize = header->size * 256;
+
+	void *glyphs;
+	{
+		font->SetPosition(font, sizeof(psf1Header));
+		SystemTable->BootServices->AllocatePool(EfiLoaderData, glyphsSize, (void**)&glyphs);
+		font->Read(font, &glyphsSize, glyphs);
+	}
+
+	psf1Font *finalFont;
+	SystemTable->BootServices->AllocatePool(EfiLoaderData, sizeof(psf1Font), (void**)&finalFont);
+	finalFont->header = header;
+	finalFont->glyphs = glyphs;
+	return finalFont;
 }
 
 int memcmp(const void* aptr, const void* bptr, size_t n){
@@ -120,24 +163,22 @@ EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
 	Print(L"Kernel loaded.\n\r");
 	
+	void (*KernelStart)(frameBuffer*, psf1Font*) = ((__attribute__((sysv_abi)) void (*)(frameBuffer*, psf1Font*) ) header.e_entry);
+	
+	psf1Font *newFont = LoadPSF1Font(NULL, L"zap-ext-light18.psf", ImageHandle, SystemTable);
+	if(newFont) Print(L"Font loaded. Size = %d\n\r", newFont->header->size);
+	else Print(L"Font invalid or not found.\n\r");
+	
 	frameBuffer *newBuffer = InitializeGOP();
-	int (*KernelStart)() = ((__attribute__((sysv_abi)) int (*)() ) header.e_entry);
 
-	Print(L"TEST\n\rBase: 0x%x\n\rSize: 0x%x\n\rWidth: %d\n\rHeight: %d\n\rPixelsPerScanline: %d\n\r",
+	Print(L"Base: 0x%x\n\rSize: 0x%x\n\rWidth: %d\n\rHeight: %d\n\rPixelsPerScanline: %d\n\r",
 	newBuffer->address,
 	newBuffer->size,
 	newBuffer->width,
 	newBuffer->height,
 	newBuffer->pixelsPerScanline);
 
-	unsigned y = 50;
-	unsigned BBP = 4;
-
-	for(unsigned x = 0; x < newBuffer->width / 2 * BBP; x++)
-		*(unsigned*)(x + (y * newBuffer->pixelsPerScanline * BBP)
-			+ newBuffer->address) = 0xffffffff;
-
-	//Print(L"%d\r\n", KernelStart());
+	KernelStart(newBuffer, newFont);
 
 	return EFI_SUCCESS; // Exit the UEFI application
 }
