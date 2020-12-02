@@ -22,3 +22,5 @@ make buildimg
 
 On the `kernel` folder, run `make run` if you're emulating it on Linux or just click `run.bat` if you're on Windows.
 
+## Credits
+EFI API and QEMU templates by [Absurdponcho](https://github.com/absurdponcho)
