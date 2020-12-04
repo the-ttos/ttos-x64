@@ -165,9 +165,9 @@ EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 	
 	void (*KernelStart)(frameBuffer*, psf1Font*) = ((__attribute__((sysv_abi)) void (*)(frameBuffer*, psf1Font*) ) header.e_entry);
 	
-	psf1Font *newFont = LoadPSF1Font(NULL, L"zap-ext-light18.psf", ImageHandle, SystemTable);
+	psf1Font *newFont = LoadPSF1Font(NULL, L"zap-light16.psf", ImageHandle, SystemTable);
 	if(newFont) Print(L"Font loaded. Size = %d\n\r", newFont->header->size);
-	else Print(L"Font invalid or not found.\n\r");
+	else Print(L"Invalid font or not found.\n\r");
 	
 	frameBuffer *newBuffer = InitializeGOP();
 
