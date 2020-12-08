@@ -6,21 +6,8 @@
 ### Emulating
 - [QEMU](https://www.qemu.org/)
 ## Compiling the OS
-It's actually pretty simple. On your terminal, `cd` into the root folder and type:
-
-```
-cd kernel
-make setup
-make kernel
-cd ../gnu-efi
-make bootloader
-cd ../kernel
-make buildimg
-```
-
+It's actually pretty simple. In the kernel folder, run `make bake`.
 ## Emulating the OS
-
-On the `kernel` folder, run `make run` if you're emulating it on Linux or just click `run.bat` if you're on Windows.
-
+In the `kernel` folder, run `make run` if you're emulating it on Linux or just click `run.bat` if you're on Windows.
 ## Credits
 EFI API and QEMU templates by [Absurdponcho](https://github.com/absurdponcho)
