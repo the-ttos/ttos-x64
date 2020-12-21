@@ -20,10 +20,6 @@ typedef struct {
     unsigned color;
 } renderer;
 
-renderer *make_renderer(frameBuffer target, point cursor, psf1Font *font, unsigned color) {
-    
-}
-
 void put_char(renderer *r, char chr, unsigned long xOff, unsigned long yOff) {
     unsigned *pixelPtr = (unsigned*)r->target->address;
     char *fontPtr = r->font->glyphs + (chr * r->font->header->size);
@@ -36,21 +32,45 @@ void put_char(renderer *r, char chr, unsigned long xOff, unsigned long yOff) {
 }
 
 void print(renderer *r, const char *str) {
-    unsigned x = r->cursor->x;
+    unsigned x = r->cursor.x;
     while(*str) {
         switch(*str) {
             case '\n':
-                r->cursor->y += 16;
+                r->cursor.y += 16;
                 goto next;
             case '\r':
-                r->cursor->x = x;
+                r->cursor.x = x;
                 goto next;
         }
-        put_char(r, *str, r->cursor->x, r->cursor->y);
-        cursor->x += 8;
-        if(cursor->x + 8 > f->width) {
-            cursor->x = x;
-            cursor->y += 16;
+        put_char(r, *str, r->cursor.x, r->cursor.y);
+        r->cursor.x += 8;
+        if(r->cursor.x + 8 > r->target->width) {
+            r->cursor.x = x;
+            r->cursor.y += 16;
+        }
+        next:
+        str++;
+    }
+}
+
+// Test
+void print_grad(renderer *r, const char *str) {
+    unsigned x = r->cursor.x;
+    while(*str) {
+        switch(*str) {
+            case '\n':
+                r->cursor.y += 16;
+                goto next;
+            case '\r':
+                r->cursor.x = x;
+                goto next;
+        }
+        if(*str != ' ') r->color++;
+        put_char(r, *str, r->cursor.x, r->cursor.y);
+        r->cursor.x += 8;
+        if(r->cursor.x + 8 > r->target->width) {
+            r->cursor.x = x;
+            r->cursor.y += 16;
         }
         next:
         str++;

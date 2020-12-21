@@ -50,6 +50,7 @@ buildimg:
 bake:
 	@ echo !==== BAKING $^
 	make kernel
+	make -C ../gnu-efi
 	make -C ../gnu-efi bootloader
 	make buildimg
 
