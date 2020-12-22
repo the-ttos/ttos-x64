@@ -13,6 +13,8 @@
 #include "fonts.h"
 #endif
 
+#define ANCHOR (point){15, 15}
+
 typedef struct {
     frameBuffer *target;
     point cursor;
@@ -32,44 +34,19 @@ void put_char(renderer *r, char chr, unsigned long xOff, unsigned long yOff) {
 }
 
 void print(renderer *r, const char *str) {
-    unsigned x = r->cursor.x;
     while(*str) {
         switch(*str) {
             case '\n':
                 r->cursor.y += 16;
                 goto next;
             case '\r':
-                r->cursor.x = x;
+                r->cursor.x = ANCHOR.x;
                 goto next;
         }
         put_char(r, *str, r->cursor.x, r->cursor.y);
         r->cursor.x += 8;
         if(r->cursor.x + 8 > r->target->width) {
-            r->cursor.x = x;
-            r->cursor.y += 16;
-        }
-        next:
-        str++;
-    }
-}
-
-// Test
-void print_grad(renderer *r, const char *str) {
-    unsigned x = r->cursor.x;
-    while(*str) {
-        switch(*str) {
-            case '\n':
-                r->cursor.y += 16;
-                goto next;
-            case '\r':
-                r->cursor.x = x;
-                goto next;
-        }
-        if(*str != ' ') r->color++;
-        put_char(r, *str, r->cursor.x, r->cursor.y);
-        r->cursor.x += 8;
-        if(r->cursor.x + 8 > r->target->width) {
-            r->cursor.x = x;
+            r->cursor.x = ANCHOR.x;
             r->cursor.y += 16;
         }
         next:
