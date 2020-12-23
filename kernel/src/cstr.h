@@ -35,7 +35,7 @@ const char *uint64_to_string(uint64_t value) {
 const char *tryte_to_string(__tryte(t)) {
     uint64_t result = 0;
     for(uint8_t i = 0; i < TRYTE_TRIT; i++)
-        result += ((t[__trit_byte(i)]
+        result += ((t[__byte_of_trit(i)]
         & (0b11 << (BYTE_TRIT - 1 - i % BYTE_TRIT) * TRIT_BIT))
         >> (BYTE_TRIT - 1 - i % BYTE_TRIT) * TRIT_BIT)
         * power_uint8(3, TRYTE_TRIT - 1 - i);
@@ -48,10 +48,33 @@ const char *tryte_to_tstring(__tryte(t)) {
     tryteBuffer[0] = '0';
     tryteBuffer[1] = 't';
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
-        tryteBuffer[2 + i] = '0' + ((t[__trit_byte(i)]
+        tryteBuffer[2 + i] = '0' + ((t[__byte_of_trit(i)]
         & (0b11 << (BYTE_TRIT - 1 - i % BYTE_TRIT) * TRIT_BIT))
         >> (BYTE_TRIT - 1 - i % BYTE_TRIT) * TRIT_BIT);
     }
     tryteBuffer[2 + TRYTE_TRIT] = '\0';
     return tryteBuffer;
+}
+
+// Tryte (3 bytes) integer to heptavintimal string
+char heptaBuffer[2 + HEPTA_TRYTE + 1];
+const char *tryte_to_hstring(__tryte(t)) {
+    heptaBuffer[0] = '0';
+    heptaBuffer[1] = 'h';
+    for(uint8_t i = 0; i < TRYTE_TRIT; i += 3) {
+        const uint8_t offset = BYTE_TRIT - 1 - (i + 0) % BYTE_TRIT;
+        const uint8_t index = 2 + i / 3;
+        heptaBuffer[index] = ((t[__byte_of_trit(i + 0)] & 0b11
+            << (BYTE_TRIT - 1 - (i + 0) % BYTE_TRIT) * TRIT_BIT)
+            >> (BYTE_TRIT - 1 - (i + 0) % BYTE_TRIT) * TRIT_BIT) * power_uint8(3, 2)
+                            + ((t[__byte_of_trit(i + 1)] & 0b11
+            << (BYTE_TRIT - 1 - (i + 1) % BYTE_TRIT) * TRIT_BIT)
+            >> (BYTE_TRIT - 1 - (i + 1) % BYTE_TRIT) * TRIT_BIT) * power_uint8(3, 1)
+                            + ((t[__byte_of_trit(i + 2)] & 0b11
+            << (BYTE_TRIT - 1 - (i + 2) % BYTE_TRIT) * TRIT_BIT)
+            >> (BYTE_TRIT - 1 - (i + 2) % BYTE_TRIT) * TRIT_BIT) * power_uint8(3, 0);
+        heptaBuffer[index] += '0' + (heptaBuffer[index] >= 10) * ('A' - '9' - 1);
+    }
+    heptaBuffer[2 + HEPTA_TRYTE] = '\0';
+    return heptaBuffer;
 }

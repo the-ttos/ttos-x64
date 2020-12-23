@@ -13,7 +13,7 @@
 #include "fonts.h"
 #endif
 
-#define ANCHOR (point){15, 15}
+#define ANCHOR (point){15, 400}
 
 typedef struct {
     frameBuffer *target;

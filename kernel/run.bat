@@ -1,5 +1,5 @@
 @echo off
-set OSNAME=ttos-x64
+set OSNAME=trisect
 set BUILDDIR=%0/../bin
 set OVMFDIR=%0/../../OVMFbin
 set BUILDDIR=%BUILDDIR:"=%

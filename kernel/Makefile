@@ -1,5 +1,5 @@
 
-OSNAME = ttos-x64
+OSNAME = trisect
 
 GNUEFI = ../gnu-efi
 OVMFDIR = ../OVMFbin

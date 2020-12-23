@@ -4,7 +4,7 @@
 #endif
 
 // Ceiling function
-#define CEILING(x,y) ((x + y - 1) / y)
+#define CEILING(x,y) (((x) + (y) - 1) / (y))
 
 // 2d point
 typedef struct {
