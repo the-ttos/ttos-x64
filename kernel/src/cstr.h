@@ -26,7 +26,7 @@ const char *uint64_to_string(uint64_t value) {
     }
     uint8_t remainder = value % 10;
     uintBuffer[size - index] = remainder + '0';
-    uintBuffer[size + 1] = 0;
+    uintBuffer[size + 1] = '\0';
     return uintBuffer;
 }
 
@@ -38,4 +38,17 @@ const char *tryte_to_string(__tryte(t)) {
         >> (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2)
         * power_uint8(3, TRYTE_TRIT - 1 - i);
     return uint64_to_string(result);
+}
+
+char tryteBuffer[2 + TRYTE_TRIT + 1];
+const char *tryte_to_tstring(__tryte(t)) {
+    tryteBuffer[0] = '0';
+    tryteBuffer[1] = 't';
+    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+        tryteBuffer[2 + i] = '0' + ((t[__trit_byte(i)]
+        & (0b11 << (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2))
+        >> (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2);
+    }
+    tryteBuffer[2 + TRYTE_TRIT] = '\0';
+    return tryteBuffer;
 }

@@ -26,8 +26,8 @@ void _start(frameBuffer *f, psf1Font *font){
             *(unsigned*)(i + (j * f->pixelsPerScanline * 4) + f->address) = 0x00000000;
     */
     __tryte(t) = {0b10000000, 0b00000000, 0b10000000};
-    print(&r, uint64_to_string(100));
+    print(&r, tryte_to_string(t));
     print(&r, "\n");
-    print(&r, tryte_to_string(__negate(t)));
+    print(&r, tryte_to_tstring(t));
     print(&r, "\n");
 }
