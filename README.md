@@ -1,4 +1,4 @@
-# ttos-x64
+# trisect-x64
 
 ## Required software
 - [QEMU](https://www.qemu.org/download/)
