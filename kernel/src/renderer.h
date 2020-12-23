@@ -38,16 +38,14 @@ void print(renderer *r, const char *str) {
         switch(*str) {
             case '\n':
                 r->cursor.y += 16;
-                goto next;
-            case '\r':
                 r->cursor.x = ANCHOR.x;
                 goto next;
         }
         put_char(r, *str, r->cursor.x, r->cursor.y);
         r->cursor.x += 8;
         if(r->cursor.x + 8 > r->target->width) {
-            r->cursor.x = ANCHOR.x;
             r->cursor.y += 16;
+            r->cursor.x = ANCHOR.x;
         }
         next:
         str++;

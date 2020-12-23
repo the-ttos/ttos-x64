@@ -1,7 +1,15 @@
+#ifndef STDINT_H
+#define STDINT_H
 #include <stdint.h>
+#endif
+
+#ifndef TRYTE_H
+#define TRYTE_H
+#include "tryte.h"
+#endif
 
 char uintBuffer[128];
-const char *to_string(uint64_t value) {
+const char *uint64_to_string(uint64_t value) {
     uint8_t size;
     uint64_t test = value;
     while(test / 10) {
@@ -20,4 +28,14 @@ const char *to_string(uint64_t value) {
     uintBuffer[size - index] = remainder + '0';
     uintBuffer[size + 1] = 0;
     return uintBuffer;
+}
+
+const char *tryte_to_string(__tryte(t)) {
+    uint64_t result = 0;
+    for(uint8_t i = 0; i < TRYTE_TRIT; i++)
+        result += ((t[__trit_byte(i)]
+        & (0b11 << (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2))
+        >> (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2)
+        * power_uint8(3, TRYTE_TRIT - 1 - i);
+    return uint64_to_string(result);
 }
