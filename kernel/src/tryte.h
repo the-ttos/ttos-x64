@@ -45,10 +45,10 @@ unsigned char *__negate(const __tryte(t)) {
     static __tryte(u);
     for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
-        const uint8_t mask = 0b01 << (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2;
-        const uint8_t y = (t[__trit_byte(i)] & mask) << 1;
-        u[__trit_byte(i)] &= ~(0b10 << (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2);
-        u[__trit_byte(i)] |= t[__trit_byte(i)] ^ ~y;
+        const uint8_t mask = 0b10 << (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2;
+        const uint8_t y = (t[__trit_byte(i)] & (mask >> 1)) << 1;
+        u[__trit_byte(i)] &= ~mask;
+        u[__trit_byte(i)] |= (t[__trit_byte(i)] ^ ~y) & mask;
     }
     return u;
 }
