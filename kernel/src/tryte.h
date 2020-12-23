@@ -38,14 +38,15 @@
 // Byte a trit is in
 #define __byte_of_trit(t) ((t) * TRIT_BIT / CHAR_BIT)
 
-// Negate trit
-// xy
+// NOT gate
+// xy   z
 // 00 | 2
 // 01 | 1
 // 11 | X
 // 10 | 0
+//
 // This implementation uses the multibase k-map equation:
-// x'y' = (~x & ~y) * 2 + (~x & y)
+// z = (~x & ~y) * 2 + (~x & y)
 unsigned char *__not(const __tryte(t)) {
     static __tryte(u);
     for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
@@ -54,12 +55,19 @@ unsigned char *__not(const __tryte(t)) {
         const uint8_t notX = ~(t[__byte_of_trit(i)] & 0b10 << offset);
         const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
         u[__byte_of_trit(i)] &= ~(0b11 << offset);
-        u[__byte_of_trit(i)] |= ((notX & ~y) * 2 + (notX & y)) & 0b11 << offset;
+        u[__byte_of_trit(i)] |= ((notX & ~y) * 2 + (notX & y));
     }
     return u;
 }
 
-// This experimental implementation uses the following equation:
+// NOT gate (EXPERIMENTAL)
+// xy   z
+// 00 | 2
+// 01 | 1
+// 11 | X
+// 10 | 0
+//
+// This implementation uses the following equation:
 // x' = x ^ ~y
 unsigned char *__not_x(const __tryte(t)) {
     static __tryte(u);
@@ -73,3 +81,46 @@ unsigned char *__not_x(const __tryte(t)) {
     return u;
 }
 
+// INC gate
+// xy   z
+// 00 | 1
+// 01 | 2
+// 11 | X
+// 10 | 0
+//
+// This implementation uses the multibase k-map equation:
+// z = (~x & ~y) * 2 + (~x & ~y)
+unsigned char *__inc(const __tryte(t)) {
+    static __tryte(u);
+    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
+    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+        const uint8_t offset = (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2;
+        const uint8_t notX = ~(t[__byte_of_trit(i)] & 0b10 << offset);
+        const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
+        u[__byte_of_trit(i)] &= ~(0b11 << offset);
+        u[__byte_of_trit(i)] |= ((notX & y) * 2 + (notX & ~y)) & 0b11 << offset;
+    }
+    return u;
+}
+
+// DEC gate
+// xy   z
+// 00 | 2
+// 01 | 0
+// 11 | X
+// 10 | 1
+//
+// This implementation uses the multibase k-map equation:
+// z = (~x & ~y) * 2 + (x & ~y)
+unsigned char *__dec(const __tryte(t)) {
+    static __tryte(u);
+    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
+    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+        const uint8_t offset = (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2;
+        const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
+        u[__byte_of_trit(i)] &= ~(0b11 << offset);
+        u[__byte_of_trit(i)] |= ((~x & y) * 2 + (x & ~y)) & 0b11 << offset;
+    }
+    return u;
+}
