@@ -26,6 +26,9 @@
 // 1 word = 9 bytes
 #define WORD_BYTE CEILING(WORD_TRIT, BYTE_TRIT)
 
+// 1 heptavintimal character = 3 trytes
+#define HEPTA_TRYTE (WORD_TRIT / TRYTE_TRIT)
+
 // Tryte macro declaration
 #define __tryte(name) uint8_t name[TRYTE_BYTE]
 

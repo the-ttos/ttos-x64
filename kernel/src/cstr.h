@@ -8,6 +8,7 @@
 #include "tryte.h"
 #endif
 
+// Unsigned 8 bytes integer to string conversion
 char uintBuffer[128];
 const char *uint64_to_string(uint64_t value) {
     uint8_t size;
@@ -30,24 +31,26 @@ const char *uint64_to_string(uint64_t value) {
     return uintBuffer;
 }
 
+// Tryte (3 bytes) integer to string
 const char *tryte_to_string(__tryte(t)) {
     uint64_t result = 0;
     for(uint8_t i = 0; i < TRYTE_TRIT; i++)
         result += ((t[__trit_byte(i)]
-        & (0b11 << (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2))
-        >> (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2)
+        & (0b11 << (BYTE_TRIT - 1 - i % BYTE_TRIT) * TRIT_BIT))
+        >> (BYTE_TRIT - 1 - i % BYTE_TRIT) * TRIT_BIT)
         * power_uint8(3, TRYTE_TRIT - 1 - i);
     return uint64_to_string(result);
 }
 
+// Tryte (3 bytes) integer to ternary string
 char tryteBuffer[2 + TRYTE_TRIT + 1];
 const char *tryte_to_tstring(__tryte(t)) {
     tryteBuffer[0] = '0';
     tryteBuffer[1] = 't';
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         tryteBuffer[2 + i] = '0' + ((t[__trit_byte(i)]
-        & (0b11 << (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2))
-        >> (BYTE_TRIT - 1 - i % BYTE_TRIT) * 2);
+        & (0b11 << (BYTE_TRIT - 1 - i % BYTE_TRIT) * TRIT_BIT))
+        >> (BYTE_TRIT - 1 - i % BYTE_TRIT) * TRIT_BIT);
     }
     tryteBuffer[2 + TRYTE_TRIT] = '\0';
     return tryteBuffer;

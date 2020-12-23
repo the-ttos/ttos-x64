@@ -30,6 +30,8 @@ void _start(frameBuffer *f, psf1Font *font){
     print(&r, "\n");
     print(&r, tryte_to_tstring(t));
     print(&r, "\n");
+    print(&r, tryte_to_hstring(t));
+    print(&r, "\n");
     print(&r, tryte_to_string(__negate(t)));
     print(&r, "\n");
     print(&r, tryte_to_tstring(__negate(t)));
