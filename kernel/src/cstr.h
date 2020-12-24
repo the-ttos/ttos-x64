@@ -64,12 +64,15 @@ const char *tryte_to_hstring(__tryte(t)) {
     for(uint8_t i = 0; i < TRYTE_TRIT; i += 3) {
         const uint8_t offset = BYTE_TRIT - 1 - (i + 0) % BYTE_TRIT;
         const uint8_t index = 2 + i / 3;
+        // 0t100 +
         heptaBuffer[index] = ((t[__byte_of_trit(i + 0)] & 0b11
             << (BYTE_TRIT - 1 - (i + 0) % BYTE_TRIT) * TRIT_BIT)
             >> (BYTE_TRIT - 1 - (i + 0) % BYTE_TRIT) * TRIT_BIT) * power_uint8(3, 2)
+        // 0t010 +
                             + ((t[__byte_of_trit(i + 1)] & 0b11
             << (BYTE_TRIT - 1 - (i + 1) % BYTE_TRIT) * TRIT_BIT)
             >> (BYTE_TRIT - 1 - (i + 1) % BYTE_TRIT) * TRIT_BIT) * power_uint8(3, 1)
+        // 0t001
                             + ((t[__byte_of_trit(i + 2)] & 0b11
             << (BYTE_TRIT - 1 - (i + 2) % BYTE_TRIT) * TRIT_BIT)
             >> (BYTE_TRIT - 1 - (i + 2) % BYTE_TRIT) * TRIT_BIT) * power_uint8(3, 0);
