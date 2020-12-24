@@ -8,7 +8,9 @@ Make sure to install the build tools by running
 
 `sudo apt-get install build-essential mtools`
 
-Everytime you change the source code, make sure you are in the `kernel` directory and run
+Everytime you change the source code, make sure you are in the root folder and run
+
+`cd kernel`
 
 `make bake`
 ## Emulating the OS
