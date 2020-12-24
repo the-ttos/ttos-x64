@@ -53,7 +53,6 @@
 // z = (~x & ~y) * 2 + (~x & y)
 unsigned char *__not_k(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t notX = (~t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
@@ -74,16 +73,15 @@ unsigned char *__not_k(const __tryte(t)) {
 // 10 | 0
 //
 // This implementation uses the following equation:
-// x' = x ^ ~y; y' = y
+// x' = ~x ^ y; y' = y
 unsigned char *__not(const __tryte(t)) {
     static __tryte(u);
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
-        const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
-        const uint8_t notY = ~t[__byte_of_trit(i)] & 0b01 << offset;
-        u[__byte_of_trit(i)] &= ~(0b10 << offset);
-        u[__byte_of_trit(i)] |= x ^ notY << 1;
+        const uint8_t notX = ~t[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
+        u[__byte_of_trit(i)] &= ~(0b11 << offset);
+        u[__byte_of_trit(i)] |= notX ^ y << 1 | y;
     }
     return u;
 }
@@ -100,7 +98,6 @@ unsigned char *__not(const __tryte(t)) {
 // z = (~x & y) * 2 + (~x & ~y)
 unsigned char *__inc_k(const __tryte(t)) {
     static __tryte(u);
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t notX = (~t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
@@ -124,7 +121,6 @@ unsigned char *__inc_k(const __tryte(t)) {
 // x' = y; y' = ~x ^ y
 unsigned char *__inc(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t notX = ~t[__byte_of_trit(i)] & 0b10 << offset;
@@ -147,7 +143,6 @@ unsigned char *__inc(const __tryte(t)) {
 // z = (~x & ~y) * 2 + (x & ~y)
 unsigned char *__dec_k(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = (t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
@@ -171,7 +166,6 @@ unsigned char *__dec_k(const __tryte(t)) {
 // x' = x ^ ~y; y' = x
 unsigned char *__dec(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
@@ -194,7 +188,6 @@ unsigned char *__dec(const __tryte(t)) {
 // z = (~x & ~y) * 2
 unsigned char *__isf_k(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t notX = (~t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
@@ -217,7 +210,6 @@ unsigned char *__isf_k(const __tryte(t)) {
 // x' = ~x ^ y; y' = 0
 unsigned char *__isf(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t notX = ~t[__byte_of_trit(i)] & 0b10 << offset;
@@ -240,7 +232,6 @@ unsigned char *__isf(const __tryte(t)) {
 // z = (~x & y) * 2
 unsigned char *__isu_k(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = (t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
@@ -264,7 +255,6 @@ unsigned char *__isu_k(const __tryte(t)) {
 // x' = y; y' = 0
 unsigned char *__isu(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
@@ -286,7 +276,6 @@ unsigned char *__isu(const __tryte(t)) {
 // z = (x & ~y) * 2
 unsigned char *__ist_k(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = (t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
@@ -309,10 +298,11 @@ unsigned char *__ist_k(const __tryte(t)) {
 // x' = x; y' = 0
 unsigned char *__ist(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
-        u[__byte_of_trit(i)] &= ~(0b01 << offset);
+        const uint8_t x = (t[__byte_of_trit(i)] & 0b10 << offset);
+        u[__byte_of_trit(i)] &= ~(0b11 << offset);
+        u[__byte_of_trit(i)] |= x;
     }
     return u;
 }
@@ -329,7 +319,6 @@ unsigned char *__ist(const __tryte(t)) {
 // z = x + y
 unsigned char *__cld_k(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = (t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
@@ -352,7 +341,6 @@ unsigned char *__cld_k(const __tryte(t)) {
 // x' = 0; y' = x ^ y
 unsigned char *__cld(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
@@ -375,7 +363,6 @@ unsigned char *__cld(const __tryte(t)) {
 // z = (x & ~y) * 2 + ~x
 unsigned char *__clu_k(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = (t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
@@ -399,12 +386,36 @@ unsigned char *__clu_k(const __tryte(t)) {
 // x' = x; y' = ~x
 unsigned char *__clu(const __tryte(t)) {
     static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_BYTE; i++) u[i] = t[i];
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
+        const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
         const uint8_t notX = ~t[__byte_of_trit(i)] & 0b10 << offset;
-        u[__byte_of_trit(i)] &= ~(0b01 << offset);
-        u[__byte_of_trit(i)] |= notX >> 1;
+        u[__byte_of_trit(i)] &= ~(0b11 << offset);
+        u[__byte_of_trit(i)] |= x | notX >> 1;
     }
     return u;
+}
+
+// MIN or AND gate
+// zw  00 01 11 10
+// xy  -----------
+// 00 | 0  0  X  0
+// 01 | 0  1  X  1
+// 11 | X  X  X  X
+// 10 | 0  1  x  2
+//
+// This implementation uses the following equation:
+// x' = x & z; y' = ((x ^ y) & (z ^ w) & ~(x & z))
+unsigned char *__and(const __tryte(t), const __tryte(u)) {
+    static __tryte(v);
+    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+        const uint8_t offset = __trit_offset(i);
+        const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
+        const uint8_t z = u[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t w = u[__byte_of_trit(i)] & 0b01 << offset;
+        v[__byte_of_trit(i)] &= ~(0b11 << offset);
+        v[__byte_of_trit(i)] |= x & z | ((x >> 1 ^ y) & (z >> 1 ^ w) & ~(x & z) >> 1);
+    }
+    return v;
 }
