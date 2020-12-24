@@ -18,15 +18,16 @@
 #include "tryte.h"
 #endif
 
+#define COLOR_OFFSET 0x00100500
+
 void _start(frameBuffer *f, psf1Font *font){
-    renderer r = {f, ANCHOR, font, 0x2ecc71ff};
-    /*
+    renderer r = {f, ANCHOR, font, 0xff0020ff};
+
     for(unsigned i = 0; i < f->width * 4; i++)
         for(unsigned j = 0; j < f->height; j++)
             *(unsigned*)(i + (j * f->pixelsPerScanline * 4) + f->address) = 0x00000000;
-    */
    
-    __tryte(t) = {0b10001001, 0b10010100, 0b10000000};
+    __tryte(t) = {0b10010010, 0b10001001, 0b00000000};
     print(&r, "ID  t (27): ");
     print(&r, tryte_to_hstring(t));
     print(&r, "\n");
@@ -36,6 +37,7 @@ void _start(frameBuffer *f, psf1Font *font){
     print(&r, "ID  t  (3): ");
     print(&r, tryte_to_tstring(t));
     print(&r, "\n");
+    r.color += COLOR_OFFSET;
     print(&r, "NOT t (27): ");
     print(&r, tryte_to_hstring(__not(t)));
     print(&r, "\n");
@@ -44,6 +46,7 @@ void _start(frameBuffer *f, psf1Font *font){
     print(&r, "\n");
     print(&r, "NOT t  (3): ");
     print(&r, tryte_to_tstring(__not(t)));
+    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "INC t (27): ");
     print(&r, tryte_to_hstring(__inc(t)));
@@ -53,6 +56,7 @@ void _start(frameBuffer *f, psf1Font *font){
     print(&r, "\n");
     print(&r, "INC t  (3): ");
     print(&r, tryte_to_tstring(__inc(t)));
+    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "DEC t (27): ");
     print(&r, tryte_to_hstring(__dec(t)));
@@ -62,6 +66,7 @@ void _start(frameBuffer *f, psf1Font *font){
     print(&r, "\n");
     print(&r, "DEC t  (3): ");
     print(&r, tryte_to_tstring(__dec(t)));
+    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "ISF t (27): ");
     print(&r, tryte_to_hstring(__isf(t)));
@@ -71,6 +76,7 @@ void _start(frameBuffer *f, psf1Font *font){
     print(&r, "\n");
     print(&r, "ISF t  (3): ");
     print(&r, tryte_to_tstring(__isf(t)));
+    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "ISU t (27): ");
     print(&r, tryte_to_hstring(__isu(t)));
@@ -80,6 +86,7 @@ void _start(frameBuffer *f, psf1Font *font){
     print(&r, "\n");
     print(&r, "ISU t  (3): ");
     print(&r, tryte_to_tstring(__isu(t)));
+    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "IST t (27): ");
     print(&r, tryte_to_hstring(__ist(t)));
@@ -89,6 +96,7 @@ void _start(frameBuffer *f, psf1Font *font){
     print(&r, "\n");
     print(&r, "IST t  (3): ");
     print(&r, tryte_to_tstring(__ist(t)));
+    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "CLD t (27): ");
     print(&r, tryte_to_hstring(__cld(t)));
@@ -98,6 +106,7 @@ void _start(frameBuffer *f, psf1Font *font){
     print(&r, "\n");
     print(&r, "CLD t  (3): ");
     print(&r, tryte_to_tstring(__cld(t)));
+    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "CLU t (27): ");
     print(&r, tryte_to_hstring(__clu(t)));
