@@ -2,9 +2,9 @@ typedef struct {
 	unsigned char magic[2];
 	unsigned char mode;
 	unsigned char size;
-} psf1Header;
+} PSF1_HEADER;
 
 typedef struct {
-	psf1Header *header;
+	PSF1_HEADER *header;
 	void *glyphs;
-} psf1Font;
+} PSF1_FONT;

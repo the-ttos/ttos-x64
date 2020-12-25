@@ -10,24 +10,24 @@ typedef struct {
 	unsigned width;
 	unsigned height;
 	unsigned pixelsPerScanline;
-} frameBuffer;
+} FRAMEBUFFER;
 
 typedef struct {
 	unsigned char magic[2];
 	unsigned char mode;
 	unsigned char size;
-} psf1Header;
+} PSF1_HEADER;
 
 #define PSF1_MAGIC0 0x36
 #define PSF1_MAGIC1 0x04
 
 typedef struct {
-	psf1Header *header;
+	PSF1_HEADER *header;
 	void *glyphs;
-} psf1Font;
+} PSF1_FONT;
 
-frameBuffer f;
-frameBuffer *InitializeGOP() {
+FRAMEBUFFER f;
+FRAMEBUFFER *InitializeGOP() {
 	EFI_GUID gopGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
 	EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
 	EFI_STATUS status;
@@ -66,13 +66,13 @@ EFI_FILE* LoadFile(EFI_FILE* Directory, CHAR16* Path, EFI_HANDLE ImageHandle, EF
 	return LoadedFile;
 }
 
-psf1Font *LoadPSF1Font(EFI_FILE* Directory, CHAR16* Path, EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
+PSF1_FONT *LoadPSF1Font(EFI_FILE* Directory, CHAR16* Path, EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
 	EFI_FILE *font = LoadFile(Directory, Path, ImageHandle, SystemTable);
 	if(!font) return NULL;
 
-	psf1Header *header;
-	SystemTable->BootServices->AllocatePool(EfiLoaderData, sizeof(psf1Header), (void**)&header);
-	UINTN size = sizeof(psf1Header);
+	PSF1_HEADER *header;
+	SystemTable->BootServices->AllocatePool(EfiLoaderData, sizeof(PSF1_HEADER), (void**)&header);
+	UINTN size = sizeof(PSF1_HEADER);
 	font->Read(font, &size, header);
 
 	if(header->magic[0] != PSF1_MAGIC0 || header->magic[1] != PSF1_MAGIC1) return NULL;
@@ -83,13 +83,13 @@ psf1Font *LoadPSF1Font(EFI_FILE* Directory, CHAR16* Path, EFI_HANDLE ImageHandle
 
 	void *glyphs;
 	{
-		font->SetPosition(font, sizeof(psf1Header));
+		font->SetPosition(font, sizeof(PSF1_HEADER));
 		SystemTable->BootServices->AllocatePool(EfiLoaderData, glyphsSize, (void**)&glyphs);
 		font->Read(font, &glyphsSize, glyphs);
 	}
 
-	psf1Font *finalFont;
-	SystemTable->BootServices->AllocatePool(EfiLoaderData, sizeof(psf1Font), (void**)&finalFont);
+	PSF1_FONT *finalFont;
+	SystemTable->BootServices->AllocatePool(EfiLoaderData, sizeof(PSF1_FONT), (void**)&finalFont);
 	finalFont->header = header;
 	finalFont->glyphs = glyphs;
 	return finalFont;
@@ -103,6 +103,14 @@ int memcmp(const void* aptr, const void* bptr, size_t n){
 	}
 	return 0;
 }
+
+typedef struct {
+	FRAMEBUFFER *framebuffer;
+	PSF1_FONT *font;
+	EFI_MEMORY_DESCRIPTOR *map;
+	UINTN mapSize;
+	UINTN mapDescriptorSize;
+} BOOT_INFO;
 
 EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 	InitializeLib(ImageHandle, SystemTable);
@@ -162,13 +170,11 @@ EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
 	Print(L"Kernel loaded.\n\r");
 	
-	void (*KernelStart)(frameBuffer*, psf1Font*) = ((__attribute__((sysv_abi)) void (*)(frameBuffer*, psf1Font*) ) header.e_entry);
-	
-	psf1Font *newFont = LoadPSF1Font(NULL, L"zap-light16.psf", ImageHandle, SystemTable);
+	PSF1_FONT *newFont = LoadPSF1Font(NULL, L"zap-light16.psf", ImageHandle, SystemTable);
 	if(newFont) Print(L"Font loaded. Size = %d\n\r", newFont->header->size);
 	else Print(L"Invalid font or not found.\n\r");
 	
-	frameBuffer *newBuffer = InitializeGOP();
+	FRAMEBUFFER *newBuffer = InitializeGOP();
 
 	Print(L"Base: 0x%x\n\rSize: 0x%x\n\rWidth: %d\n\rHeight: %d\n\rPixelsPerScanline: %d\n\r",
 	newBuffer->address,
@@ -177,7 +183,28 @@ EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 	newBuffer->height,
 	newBuffer->pixelsPerScanline);
 
-	KernelStart(newBuffer, newFont);
+	EFI_MEMORY_DESCRIPTOR *map = NULL;
+	UINTN mapSize, mapKey;
+	UINTN descriptorSize;
+	UINT32 descriptorVersion;
+	{
+		SystemTable->BootServices->GetMemoryMap(&mapSize, map, &mapKey, &descriptorSize, &descriptorVersion);
+		SystemTable->BootServices->AllocatePool(EfiLoaderData, mapSize, (void**)&map);
+		SystemTable->BootServices->GetMemoryMap(&mapSize, map, &mapKey, &descriptorSize, &descriptorVersion);	
+	}
+
+	void (*KernelStart)(BOOT_INFO*) = ((__attribute__((sysv_abi)) void (*)(BOOT_INFO*) ) header.e_entry);
+
+	BOOT_INFO bootInfo;
+	bootInfo.framebuffer = newBuffer;
+	bootInfo.font = newFont;
+	bootInfo.map = map;
+	bootInfo.mapSize = mapSize;
+	bootInfo.mapDescriptorSize = descriptorVersion;
+
+	SystemTable->BootServices->ExitBootServices(ImageHandle, mapKey);
+
+	KernelStart(&bootInfo);
 
 	return EFI_SUCCESS; // Exit the UEFI application
 }

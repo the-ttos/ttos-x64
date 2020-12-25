@@ -18,15 +18,41 @@
 #include "tryte.h"
 #endif
 
+#ifndef EFI_MEMORY_H
+#define EFI_MEMORY_H
+#include "efimemory.h"
+#endif
+
 #define COLOR_OFFSET 0x00100500
 
-void _start(frameBuffer *f, psf1Font *font){
-    renderer r = {f, ANCHOR, font, 0xff0020ff};
+typedef struct {
+	FRAMEBUFFER *framebuffer;
+	PSF1_FONT *font;
+	void *map;
+	uint64_t mapSize;
+	uint64_t mapDescriptorSize;
+} BOOT_INFO;
 
-    for(unsigned i = 0; i < f->width * 4; i++)
-        for(unsigned j = 0; j < f->height; j++)
-            *(unsigned*)(i + (j * f->pixelsPerScanline * 4) + f->address) = 0x00000000;
-   
+void _start(BOOT_INFO *bootInfo){
+    renderer r = {bootInfo->framebuffer, ANCHOR, bootInfo->font, 0xff0020ff};
+
+    for(uint64_t i = 0; i < bootInfo->framebuffer->width * 4; i++)
+        for(uint64_t j = 0; j < bootInfo->framebuffer->height; j++)
+            *(uint64_t*)(i + (j * bootInfo->framebuffer->pixelsPerScanline * 4) + bootInfo->framebuffer->address) = 0x00000000;
+    
+    uint64_t mapEntries = bootInfo->mapSize / bootInfo->mapDescriptorSize;
+    for(uint64_t i = 0; i < mapEntries; i++) {
+        EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)bootInfo->map + i * bootInfo->mapDescriptorSize);
+        print(&r, efiMemoryTypeStrings[desc->type]);
+        print(&r, " ");
+        r.color = 0xffff00ff;
+        print(&r, uint64_to_string(desc->pageCount * 4096 / 1024));
+        print(&r, " ");
+        print(&r, "KB");
+        print(&r, "\n");
+        r.color = 0xff0020ff;
+    }
+    /*
     __tryte(t) = {0b10010010, 0b10001001, 0b00000000};
     print(&r, "ID  t (27): ");
     print(&r, tryte_to_hstring(t));
@@ -149,4 +175,5 @@ void _start(frameBuffer *f, psf1Font *font){
     print(&r, "AND u, v  (3): ");
     print(&r, tryte_to_tstring(__and(u, v)));
     print(&r, "\n");
+    */
 }

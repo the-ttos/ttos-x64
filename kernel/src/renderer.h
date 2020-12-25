@@ -16,9 +16,9 @@
 #define ANCHOR (point){15, 15}
 
 typedef struct {
-    frameBuffer *target;
+    FRAMEBUFFER *target;
     point cursor;
-    psf1Font *font;
+    PSF1_FONT *font;
     unsigned color;
 } renderer;
 

@@ -1,4 +1,7 @@
+#ifndef STDDEF_H
+#define STDDEF_H
 #include <stddef.h>
+#endif
 
 typedef struct {
 	void *address;
@@ -6,4 +9,4 @@ typedef struct {
 	unsigned width;
 	unsigned height;
 	unsigned pixelsPerScanline;
-} frameBuffer;
+} FRAMEBUFFER;
