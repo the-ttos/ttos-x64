@@ -8,6 +8,18 @@
 #include "math.h"
 #endif
 
+typedef enum {
+    TWA,
+    TWE,
+    TWI
+} UTRIT;
+
+typedef enum {
+    FALSE,
+    UNKNOWN,
+    TRUE
+} BTRIT;
+
 // 1 trit = 2 bits
 #define TRIT_BIT CEILING(3, 2)
 
@@ -32,6 +44,15 @@
 // Tryte macro declaration
 #define __tryte(name) uint8_t name[TRYTE_BYTE]
 
+// Tryte pointer macro declaration
+#define __tryte_ptr(name) uint8_t *(name)[TRYTE_BYTE]
+
+// Tryte buffer macro declaration
+#define __tryte_buffer(name, count) uint8_t name[CEILING(count * TRYTE_TRIT, BYTE_TRIT)]
+
+// Tryte pointer macro declaration
+#define __tryte_buffer_ptr(name) uint8_t *name
+
 // Word macro declaration
 #define __word(name) uint8_t name[WORD_BYTE]
 
@@ -39,10 +60,9 @@
 #define __byte_of_trit(t) ((t) * TRIT_BIT / CHAR_BIT)
 
 // Offset of 0b11 inside a byte
-#define __trit_offset(i) ((BYTE_TRIT - 1 - (i) % BYTE_TRIT) * TRIT_BIT);
+#define __trit_offset(i) ((BYTE_TRIT - 1 - (i) % BYTE_TRIT) * TRIT_BIT)
 
 // NOT gate (KARNAUGH)
-// Negate trit
 // xy | z
 // 00 | 2
 // 01 | 1
@@ -65,7 +85,6 @@ unsigned char *__not_k(const __tryte(t)) {
 }
 
 // NOT gate
-// Negate trit
 // xy | z
 // 00 | 2
 // 01 | 1
@@ -87,7 +106,6 @@ unsigned char *__not(const __tryte(t)) {
 }
 
 // INC gate (KARNAUGH)
-// Increment trit (modulo)
 // xy | z
 // 00 | 1
 // 01 | 2
@@ -110,7 +128,6 @@ unsigned char *__inc_k(const __tryte(t)) {
 }
 
 // INC gate
-// Increment trit (modulo)
 // xy | z
 // 00 | 1
 // 01 | 2
@@ -132,7 +149,6 @@ unsigned char *__inc(const __tryte(t)) {
 }
 
 // DEC gate (KARNAUGH)
-// Decrement trit (modulo)
 // xy | z
 // 00 | 2
 // 01 | 0
@@ -155,7 +171,6 @@ unsigned char *__dec_k(const __tryte(t)) {
 }
 
 // DEC gate
-// Decrement trit (modulo)
 // xy | z
 // 00 | 2
 // 01 | 0
@@ -177,7 +192,6 @@ unsigned char *__dec(const __tryte(t)) {
 }
 
 // ISF gate (KARNAUGH)
-// Check if trit is false
 // xy | z
 // 00 | 2
 // 01 | 0
@@ -185,7 +199,7 @@ unsigned char *__dec(const __tryte(t)) {
 // 10 | 0
 //
 // This implementation uses the multibase k-map equation:
-// z = (~x & ~y) * 2
+// z = ~(x | y) * 2
 unsigned char *__isf_k(const __tryte(t)) {
     static __tryte(u);  
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
@@ -199,7 +213,6 @@ unsigned char *__isf_k(const __tryte(t)) {
 }
 
 // ISF gate
-// Check if trit is false
 // xy | z
 // 00 | 2
 // 01 | 0
@@ -221,7 +234,6 @@ unsigned char *__isf(const __tryte(t)) {
 }
 
 // ISU gate (KARNAUGH)
-// Check if trit is unknown
 // xy | z
 // 00 | 0
 // 01 | 2
@@ -244,7 +256,6 @@ unsigned char *__isu_k(const __tryte(t)) {
 }
 
 // ISU gate
-// Check if trit is unknown
 // xy | z
 // 00 | 0
 // 01 | 2
@@ -265,7 +276,6 @@ unsigned char *__isu(const __tryte(t)) {
 }
 
 // IST gate (KARNAUGH)
-// Check if trit is true
 // xy | z
 // 00 | 0
 // 01 | 0
@@ -287,7 +297,6 @@ unsigned char *__ist_k(const __tryte(t)) {
 }
 
 // IST gate
-// Check if trit is true
 // xy | z
 // 00 | 0
 // 01 | 0
@@ -308,7 +317,6 @@ unsigned char *__ist(const __tryte(t)) {
 }
 
 // CLD gate (KARNAUGH)
-// Clamp down trit
 // xy | z
 // 00 | 0
 // 01 | 1
@@ -330,7 +338,6 @@ unsigned char *__cld_k(const __tryte(t)) {
 }
 
 // CLD gate
-// Clamp down trit
 // xy | z
 // 00 | 0
 // 01 | 1
@@ -352,7 +359,6 @@ unsigned char *__cld(const __tryte(t)) {
 }
 
 // CLU gate (KARNAUGH)
-// Clamp up trit
 // xy | z
 // 00 | 1
 // 01 | 1
@@ -375,7 +381,6 @@ unsigned char *__clu_k(const __tryte(t)) {
 }
 
 // CLU gate
-// Clamp up trit
 // xy | z
 // 00 | 1
 // 01 | 1
@@ -416,6 +421,30 @@ unsigned char *__and(const __tryte(t), const __tryte(u)) {
         const uint8_t w = u[__byte_of_trit(i)] & 0b01 << offset;
         v[__byte_of_trit(i)] &= ~(0b11 << offset);
         v[__byte_of_trit(i)] |= x & z | ((x >> 1 ^ y) & (z >> 1 ^ w) & ~(x & z) >> 1);
+    }
+    return v;
+}
+
+// MAX or OR gate
+// zw  00 01 11 10
+// xy  -----------
+// 00 | 0  1  X  2
+// 01 | 1  1  X  2
+// 11 | X  X  X  X
+// 10 | 2  2  x  2
+//
+// This implementation uses the following equation:
+// x' = x | z; y' = (y | w) & ~(z ^ x)
+unsigned char *__or(const __tryte(t), const __tryte(u)) {
+    static __tryte(v);
+    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+        const uint8_t offset = __trit_offset(i);
+        const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
+        const uint8_t z = u[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t w = u[__byte_of_trit(i)] & 0b01 << offset;
+        v[__byte_of_trit(i)] &= ~(0b11 << offset);
+        v[__byte_of_trit(i)] |= x | z | ((y | w) & ~(z >> 1 ^ x >> 1));
     }
     return v;
 }

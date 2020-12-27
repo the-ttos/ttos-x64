@@ -9,8 +9,8 @@
 #endif
 
 // Unsigned 8 bytes integer to string conversion
-char uintBuffer[128];
 const char *uint64_to_string(uint64_t value) {
+    static char uintBuffer[128];
     uint8_t size;
     uint64_t test = value;
     while(test / 10) {
@@ -43,8 +43,8 @@ const char *tryte_to_string(__tryte(t)) {
 }
 
 // Tryte (3 bytes) integer to ternary string
-char tryteBuffer[2 + TRYTE_TRIT + 1];
 const char *tryte_to_tstring(__tryte(t)) {
+    static char tryteBuffer[2 + TRYTE_TRIT + 1];
     tryteBuffer[0] = '0';
     tryteBuffer[1] = 't';
     for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
@@ -57,8 +57,8 @@ const char *tryte_to_tstring(__tryte(t)) {
 }
 
 // Tryte (3 bytes) integer to heptavintimal string
-char heptaBuffer[2 + HEPTA_TRYTE + 1];
 const char *tryte_to_hstring(__tryte(t)) {
+    static char heptaBuffer[2 + HEPTA_TRYTE + 1];
     heptaBuffer[0] = '0';
     heptaBuffer[1] = 'h';
     for(uint8_t i = 0; i < TRYTE_TRIT; i += 3) {
@@ -80,4 +80,12 @@ const char *tryte_to_hstring(__tryte(t)) {
     }
     heptaBuffer[2 + HEPTA_TRYTE] = '\0';
     return heptaBuffer;
+}
+
+// Trit (2 bits) to balanced trit string
+const char *trit_to_bstring(BTRIT t) {
+    if(t == 0) return "FALSE";
+    if(t == 1) return "UNKNOWN";
+    if(t == 2) return "TRUE";
+    return 0;
 }

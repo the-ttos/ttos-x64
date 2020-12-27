@@ -200,7 +200,7 @@ EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 	bootInfo.font = newFont;
 	bootInfo.map = map;
 	bootInfo.mapSize = mapSize;
-	bootInfo.mapDescriptorSize = descriptorVersion;
+	bootInfo.mapDescriptorSize = descriptorSize;
 
 	SystemTable->BootServices->ExitBootServices(ImageHandle, mapKey);
 

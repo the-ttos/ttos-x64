@@ -10,7 +10,7 @@
 typedef struct {
     unsigned x;
     unsigned y;
-} point;
+} POINT;
 
 // Power function that uses 1 byte-sized base and exponent
 uint64_t power_uint8(const uint8_t base, const uint8_t exponent) {

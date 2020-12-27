@@ -18,9 +18,19 @@
 #include "tryte.h"
 #endif
 
-#ifndef EFI_MEMORY_H
-#define EFI_MEMORY_H
+#ifndef EFIMEMORY_H
+#define EFIMEMORY_H
 #include "efimemory.h"
+#endif
+
+#ifndef MEMORY_H
+#define MEMORY_H
+#include "memory.h"
+#endif
+
+#ifndef TRITMAP_H
+#define TRITMAP_H
+#include "tritmap.h"
 #endif
 
 #define COLOR_OFFSET 0x00100500
@@ -28,21 +38,38 @@
 typedef struct {
 	FRAMEBUFFER *framebuffer;
 	PSF1_FONT *font;
-	void *map;
+	EFI_MEMORY_DESCRIPTOR *map;
 	uint64_t mapSize;
 	uint64_t mapDescriptorSize;
 } BOOT_INFO;
 
 void _start(BOOT_INFO *bootInfo){
-    renderer r = {bootInfo->framebuffer, ANCHOR, bootInfo->font, 0xff0020ff};
+    RENDERER r = {bootInfo->framebuffer, ANCHOR, bootInfo->font, 0xff0020ff};
 
-    for(uint64_t i = 0; i < bootInfo->framebuffer->width * 4; i++)
-        for(uint64_t j = 0; j < bootInfo->framebuffer->height; j++)
-            *(uint64_t*)(i + (j * bootInfo->framebuffer->pixelsPerScanline * 4) + bootInfo->framebuffer->address) = 0x00000000;
+    for(uint16_t i = 0; i < bootInfo->framebuffer->width * 4; i++)
+        for(uint16_t j = 0; j < bootInfo->framebuffer->height; j++)
+            *(uint8_t*)(i + (j * bootInfo->framebuffer->pixelsPerScanline * 4) + bootInfo->framebuffer->address) = 0x00000000;
     
-    uint64_t mapEntries = bootInfo->mapSize / bootInfo->mapDescriptorSize;
+    // uint64_t mapEntries = bootInfo->mapSize / bootInfo->mapDescriptorSize;
+
+    print(&r, "\n==================== TRITMAP TESTS ====================\n");
+    __tryte_buffer(b, 2) = { 0 };
+    write_trit(b, 7, TRUE);
+    write_trit(b, 8, UNKNOWN);
+    write_trit(b, 9, FALSE);
+    write_trit(b, 10, UNKNOWN);
+    write_trit(b, 11, UNKNOWN);
+    write_trit(b, 12, TRUE);
+    for(uint8_t i = 7; i < 13; i++) {
+        print(&r, trit_to_bstring(read_trit(b, i)));
+        print(&r, "\n");
+    }
+
+    // print(&r, uint64_to_string(get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize)));
+    
+    /*
     for(uint64_t i = 0; i < mapEntries; i++) {
-        EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)bootInfo->map + i * bootInfo->mapDescriptorSize);
+        EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)bootInfo->map + (i * bootInfo->mapDescriptorSize));
         print(&r, efiMemoryTypeStrings[desc->type]);
         print(&r, " ");
         r.color = 0xffff00ff;
@@ -52,7 +79,9 @@ void _start(BOOT_INFO *bootInfo){
         print(&r, "\n");
         r.color = 0xff0020ff;
     }
-    /*
+    */   
+
+    print(&r, "\n====================  GATE TESTS  =====================\n");
     __tryte(t) = {0b10010010, 0b10001001, 0b00000000};
     print(&r, "ID  t (27): ");
     print(&r, tryte_to_hstring(t));
@@ -143,7 +172,7 @@ void _start(BOOT_INFO *bootInfo){
     print(&r, "CLU t  (3): ");
     print(&r, tryte_to_tstring(__clu(t)));
     print(&r, "\n");
-    __tryte(u) = {0b10100101, 0b00011010, 0b00000000};
+    __tryte(u) = {0b10001010, 0b00101000, 0b10000000};
     r.color += COLOR_OFFSET;
     print(&r, "ID  u (27): ");
     print(&r, tryte_to_hstring(u));
@@ -175,5 +204,14 @@ void _start(BOOT_INFO *bootInfo){
     print(&r, "AND u, v  (3): ");
     print(&r, tryte_to_tstring(__and(u, v)));
     print(&r, "\n");
-    */
+    r.color += COLOR_OFFSET;
+    print(&r, "OR  u, v (27): ");
+    print(&r, tryte_to_hstring(__or(u, v)));
+    print(&r, "\n");
+    print(&r, "OR  u, v (10): ");
+    print(&r, tryte_to_string(__or(u, v)));
+    print(&r, "\n");
+    print(&r, "OR  u, v  (3): ");
+    print(&r, tryte_to_tstring(__or(u, v)));
+    print(&r, "\n");
 }

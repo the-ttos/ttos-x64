@@ -13,16 +13,16 @@
 #include "fonts.h"
 #endif
 
-#define ANCHOR (point){15, 15}
+#define ANCHOR (POINT){15, 15}
 
 typedef struct {
     FRAMEBUFFER *target;
-    point cursor;
+    POINT cursor;
     PSF1_FONT *font;
     unsigned color;
-} renderer;
+} RENDERER;
 
-void put_char(renderer *r, char chr, unsigned long xOff, unsigned long yOff) {
+void put_char(RENDERER *r, char chr, unsigned long xOff, unsigned long yOff) {
     unsigned *pixelPtr = (unsigned*)r->target->address;
     char *fontPtr = r->font->glyphs + (chr * r->font->header->size);
     for(unsigned long y = yOff; y < yOff + 16; y++) {
@@ -33,7 +33,7 @@ void put_char(renderer *r, char chr, unsigned long xOff, unsigned long yOff) {
     }
 }
 
-void print(renderer *r, const char *str) {
+void print(RENDERER *r, const char *str) {
     while(*str) {
         switch(*str) {
             case '\n':
