@@ -214,4 +214,24 @@ void _start(BOOT_INFO *bootInfo){
     print(&r, "OR  u, v  (3): ");
     print(&r, tryte_to_tstring(__or(u, v)));
     print(&r, "\n");
+    r.color += COLOR_OFFSET;
+    print(&r, "NAND  u, v (27): ");
+    print(&r, tryte_to_hstring(__nand(u, v)));
+    print(&r, "\n");
+    print(&r, "NAND  u, v (10): ");
+    print(&r, tryte_to_string(__nand(u, v)));
+    print(&r, "\n");
+    print(&r, "NAND  u, v  (3): ");
+    print(&r, tryte_to_tstring(__nand(u, v)));
+    print(&r, "\n");
+    r.color += COLOR_OFFSET;
+    print(&r, "NOR  u, v (27): ");
+    print(&r, tryte_to_hstring(__nor(u, v)));
+    print(&r, "\n");
+    print(&r, "NOR  u, v (10): ");
+    print(&r, tryte_to_string(__nor(u, v)));
+    print(&r, "\n");
+    print(&r, "NOR  u, v  (3): ");
+    print(&r, tryte_to_tstring(__nor(u, v)));
+    print(&r, "\n");
 }

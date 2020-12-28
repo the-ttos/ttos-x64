@@ -57,7 +57,7 @@ typedef enum {
 #define __word(name) uint8_t name[WORD_BYTE]
 
 // Byte a trit is in
-#define __byte_of_trit(t) ((t) * TRIT_BIT / CHAR_BIT)
+#define __byte_of_trit(t) ((t)*TRIT_BIT / CHAR_BIT)
 
 // Offset of 0b11 inside a byte
 #define __trit_offset(i) ((BYTE_TRIT - 1 - (i) % BYTE_TRIT) * TRIT_BIT)
@@ -71,9 +71,10 @@ typedef enum {
 //
 // This implementation uses the multibase k-map equation:
 // z = (~x & ~y) * 2 + (~x & y)
-unsigned char *__not_k(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+unsigned char *__not_k(const __tryte(t))
+{
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t notX = (~t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
         const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
@@ -95,7 +96,7 @@ unsigned char *__not_k(const __tryte(t)) {
 // x' = ~x ^ y; y' = y
 unsigned char *__not(const __tryte(t)) {
     static __tryte(u);
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t notX = ~t[__byte_of_trit(i)] & 0b10 << offset;
         const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
@@ -116,7 +117,7 @@ unsigned char *__not(const __tryte(t)) {
 // z = (~x & y) * 2 + (~x & ~y)
 unsigned char *__inc_k(const __tryte(t)) {
     static __tryte(u);
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t notX = (~t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
         const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
@@ -133,12 +134,12 @@ unsigned char *__inc_k(const __tryte(t)) {
 // 01 | 2
 // 11 | X
 // 10 | 0
-// 
+//
 // This implementation uses the following equation:
 // x' = y; y' = ~x ^ y
 unsigned char *__inc(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t notX = ~t[__byte_of_trit(i)] & 0b10 << offset;
         const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
@@ -158,8 +159,8 @@ unsigned char *__inc(const __tryte(t)) {
 // This implementation uses the multibase k-map equation:
 // z = (~x & ~y) * 2 + (x & ~y)
 unsigned char *__dec_k(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = (t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
         const uint8_t notX = (~t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
@@ -180,8 +181,8 @@ unsigned char *__dec_k(const __tryte(t)) {
 // This implementation uses the following equation:
 // x' = x ^ ~y; y' = x
 unsigned char *__dec(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
         const uint8_t notY = ~t[__byte_of_trit(i)] & 0b01 << offset;
@@ -201,8 +202,8 @@ unsigned char *__dec(const __tryte(t)) {
 // This implementation uses the multibase k-map equation:
 // z = ~(x | y) * 2
 unsigned char *__isf_k(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t notX = (~t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
         const uint8_t notY = ~t[__byte_of_trit(i)] & 0b01 << offset;
@@ -222,8 +223,8 @@ unsigned char *__isf_k(const __tryte(t)) {
 // This implementation uses the following equation:
 // x' = ~x ^ y; y' = 0
 unsigned char *__isf(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t notX = ~t[__byte_of_trit(i)] & 0b10 << offset;
         const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
@@ -243,8 +244,8 @@ unsigned char *__isf(const __tryte(t)) {
 // This implementation uses the multibase k-map equation:
 // z = (~x & y) * 2
 unsigned char *__isu_k(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = (t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
         const uint8_t notX = (~t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
@@ -265,8 +266,8 @@ unsigned char *__isu_k(const __tryte(t)) {
 // This implementation uses the following equation:
 // x' = y; y' = 0
 unsigned char *__isu(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
         u[__byte_of_trit(i)] &= ~(0b11 << offset);
@@ -285,8 +286,8 @@ unsigned char *__isu(const __tryte(t)) {
 // This implementation uses the multibase k-map equation:
 // z = (x & ~y) * 2
 unsigned char *__ist_k(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = (t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
         const uint8_t notY = ~t[__byte_of_trit(i)] & 0b01 << offset;
@@ -306,8 +307,8 @@ unsigned char *__ist_k(const __tryte(t)) {
 // This implementation uses the following equation:
 // x' = x; y' = 0
 unsigned char *__ist(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = (t[__byte_of_trit(i)] & 0b10 << offset);
         u[__byte_of_trit(i)] &= ~(0b11 << offset);
@@ -326,8 +327,8 @@ unsigned char *__ist(const __tryte(t)) {
 // This implementation uses the multibase k-map equation:
 // z = x + y
 unsigned char *__cld_k(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = (t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
         const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
@@ -347,8 +348,8 @@ unsigned char *__cld_k(const __tryte(t)) {
 // This implementation uses the following equation:
 // x' = 0; y' = x ^ y
 unsigned char *__cld(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
         const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
@@ -368,8 +369,8 @@ unsigned char *__cld(const __tryte(t)) {
 // This implementation uses the multibase k-map equation:
 // z = (x & ~y) * 2 + ~x
 unsigned char *__clu_k(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = (t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
         const uint8_t notX = (~t[__byte_of_trit(i)] & 0b10 << offset) >> 1;
@@ -390,8 +391,8 @@ unsigned char *__clu_k(const __tryte(t)) {
 // This implementation uses the following equation:
 // x' = x; y' = ~x
 unsigned char *__clu(const __tryte(t)) {
-    static __tryte(u);  
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    static __tryte(u);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
         const uint8_t notX = ~t[__byte_of_trit(i)] & 0b10 << offset;
@@ -413,7 +414,7 @@ unsigned char *__clu(const __tryte(t)) {
 // x' = x & z; y' = ((x ^ y) & (z ^ w) & ~(x & z))
 unsigned char *__and(const __tryte(t), const __tryte(u)) {
     static __tryte(v);
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
         const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
@@ -437,7 +438,7 @@ unsigned char *__and(const __tryte(t), const __tryte(u)) {
 // x' = x | z; y' = (y | w) & ~(z ^ x)
 unsigned char *__or(const __tryte(t), const __tryte(u)) {
     static __tryte(v);
-    for(uint8_t i = 0; i < TRYTE_TRIT; i++) {
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
         const uint8_t offset = __trit_offset(i);
         const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
         const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
@@ -445,6 +446,57 @@ unsigned char *__or(const __tryte(t), const __tryte(u)) {
         const uint8_t w = u[__byte_of_trit(i)] & 0b01 << offset;
         v[__byte_of_trit(i)] &= ~(0b11 << offset);
         v[__byte_of_trit(i)] |= x | z | ((y | w) & ~(z >> 1 ^ x >> 1));
+    }
+    return v;
+}
+
+// AMIN or NAND
+// zw  00 01 11 10
+// xy  -----------
+// 00 | 2  2  X  2
+// 01 | 2  1  X  1
+// 11 | X  X  X  X
+// 10 | 2  1  x  0
+//
+// This implementation uses the following equation:
+// x' = ~y' & ~(x & z); y' = y & (z | w) | x & w
+unsigned char *__nand(const __tryte(t), const __tryte(u)) {
+    static __tryte(v);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
+        const uint8_t offset = __trit_offset(i);
+        const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
+        const uint8_t z = u[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t w = u[__byte_of_trit(i)] & 0b01 << offset;
+        const uint8_t yL = (y & (z >> 1 | w) | x >> 1 & w) & 0b01 << offset;
+        const uint8_t notYL = ~yL & 0b01 << offset;
+        v[__byte_of_trit(i)] &= ~(0b11 << offset);
+        v[__byte_of_trit(i)] |= notYL << 1 & ~(x & z) | yL;
+    }   
+    return v;
+}
+
+// Antimax or Nor
+// zw  00 01 11 10
+// xy  -----------
+// 00 | 2  1  X  0
+// 01 | 1  1  X  0
+// 11 | X  X  X  X
+// 10 | 0  0  x  0
+//
+// This implementation uses the following equation:
+// x' = ~(x | y | z | w); y' = ~(x ^ z) & (y | w)
+unsigned char *__nor(const __tryte(t), const __tryte(u)) {
+    static __tryte(v);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
+        const uint8_t offset = __trit_offset(i);
+        const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
+        const uint8_t z = u[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t w = u[__byte_of_trit(i)] & 0b01 << offset;
+        v[__byte_of_trit(i)] &= ~(0b11 << offset);
+        v[__byte_of_trit(i)] |= ~(x | y << 1 | z | w << 1) & 0b10 << offset
+         | ~(x ^ z) >> 1 & (y | w) & 0b01 << offset;
     }
     return v;
 }
