@@ -172,7 +172,7 @@ void _start(BOOT_INFO *bootInfo){
     print(&r, "CLU t  (3): ");
     print(&r, tryte_to_tstring(__clu(t)));
     print(&r, "\n");
-    __tryte(u) = {0b10001010, 0b00101000, 0b10000000};
+    __tryte(u) = {0b00000001, 0b01011010, 0b10000000};
     r.color += COLOR_OFFSET;
     print(&r, "ID  u (27): ");
     print(&r, tryte_to_hstring(u));
@@ -183,7 +183,7 @@ void _start(BOOT_INFO *bootInfo){
     print(&r, "ID  u  (3): ");
     print(&r, tryte_to_tstring(u));
     print(&r, "\n");
-    __tryte(v) = {0b01100001, 0b00101000, 0b00000000};
+    __tryte(v) = {0b00011000, 0b01100001, 0b10000000};
     r.color += COLOR_OFFSET;
     print(&r, "ID  v (27): ");
     print(&r, tryte_to_hstring(v));
@@ -233,5 +233,25 @@ void _start(BOOT_INFO *bootInfo){
     print(&r, "\n");
     print(&r, "NOR  u, v  (3): ");
     print(&r, tryte_to_tstring(__nor(u, v)));
+    print(&r, "\n");
+    r.color += COLOR_OFFSET;
+    print(&r, "XOR  u, v (27): ");
+    print(&r, tryte_to_hstring(__xor(u, v)));
+    print(&r, "\n");
+    print(&r, "XOR  u, v (10): ");
+    print(&r, tryte_to_string(__xor(u, v)));
+    print(&r, "\n");
+    print(&r, "XOR  u, v  (3): ");
+    print(&r, tryte_to_tstring(__xor(u, v)));
+    print(&r, "\n");
+    r.color += COLOR_OFFSET;
+    print(&r, "SUM  u, v (27): ");
+    print(&r, tryte_to_hstring(__sum(u, v)));
+    print(&r, "\n");
+    print(&r, "SUM  u, v (10): ");
+    print(&r, tryte_to_string(__sum(u, v)));
+    print(&r, "\n");
+    print(&r, "SUM  u, v  (3): ");
+    print(&r, tryte_to_tstring(__sum(u, v)));
     print(&r, "\n");
 }

@@ -450,7 +450,7 @@ unsigned char *__or(const __tryte(t), const __tryte(u)) {
     return v;
 }
 
-// AMIN or NAND
+// NMIN or NAND
 // zw  00 01 11 10
 // xy  -----------
 // 00 | 2  2  X  2
@@ -476,7 +476,7 @@ unsigned char *__nand(const __tryte(t), const __tryte(u)) {
     return v;
 }
 
-// Antimax or Nor
+// NMAX or NOR
 // zw  00 01 11 10
 // xy  -----------
 // 00 | 2  1  X  0
@@ -496,7 +496,57 @@ unsigned char *__nor(const __tryte(t), const __tryte(u)) {
         const uint8_t w = u[__byte_of_trit(i)] & 0b01 << offset;
         v[__byte_of_trit(i)] &= ~(0b11 << offset);
         v[__byte_of_trit(i)] |= ~(x | y << 1 | z | w << 1) & 0b10 << offset
-         | ~(x ^ z) >> 1 & (y | w) & 0b01 << offset;
+        | ~(x ^ z) >> 1 & (y | w);
+    }
+    return v;
+}
+
+// XOR
+// zw  00 01 11 10
+// xy  -----------
+// 00 | 0  1  X  2
+// 01 | 1  1  X  1
+// 11 | X  X  X  X
+// 10 | 2  1  x  0
+//
+// This implementation uses the following equation:
+// x' = x & (~z ^ w) | z & (~x ^ y); y' = w | y
+unsigned char *__xor(const __tryte(t), const __tryte(u)) {
+    static __tryte(v);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
+        const uint8_t offset = __trit_offset(i);
+        const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t y = t[__byte_of_trit(i)] & 0b01 << offset;
+        const uint8_t z = u[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t w = u[__byte_of_trit(i)] & 0b01 << offset;
+        v[__byte_of_trit(i)] &= ~(0b11 << offset);
+        v[__byte_of_trit(i)] |= x & (~z ^ w << 1) | z & (~x ^ y << 1)
+        | w | y;
+    }
+    return v;
+}
+
+// SUM
+// zw  00 01 11 10
+// xy  -----------
+// 00 | 2  0  X  1
+// 01 | 0  1  X  2
+// 11 | X  X  X  X
+// 10 | 1  2  x  0
+//
+// This implementation uses the following equation:
+// x' = (~y ^ z) & (~x ^ w); y' = (~y ^ w) & (x ^ z)
+unsigned char *__sum(const __tryte(t), const __tryte(u)) {
+    static __tryte(v);
+    for (uint8_t i = 0; i < TRYTE_TRIT; i++) {
+        const uint8_t offset = __trit_offset(i);
+        const uint8_t x = t[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t notY = ~t[__byte_of_trit(i)] & 0b01 << offset;
+        const uint8_t z = u[__byte_of_trit(i)] & 0b10 << offset;
+        const uint8_t w = u[__byte_of_trit(i)] & 0b01 << offset;
+        v[__byte_of_trit(i)] &= ~(0b11 << offset);
+        v[__byte_of_trit(i)] |= (notY << 1 ^ z) & (~x ^ w << 1)
+        | (notY ^ w) & (x ^ z) >> 1;
     }
     return v;
 }
