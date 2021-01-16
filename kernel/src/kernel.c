@@ -50,8 +50,23 @@ void _start(BOOT_INFO *bootInfo){
         for(uint16_t j = 0; j < bootInfo->framebuffer->height; j++)
             *(uint8_t*)(i + (j * bootInfo->framebuffer->pixelsPerScanline * 4) + bootInfo->framebuffer->address) = 0x00000000;
     
-    // uint64_t mapEntries = bootInfo->mapSize / bootInfo->mapDescriptorSize;
+    uint64_t mapEntries = bootInfo->mapSize / bootInfo->mapDescriptorSize;
 
+    print(&r, uint64_to_string(get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize)));
+    
+    for(uint64_t i = 0; i < mapEntries; i++) {
+        EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)bootInfo->map + (i * bootInfo->mapDescriptorSize));
+        print(&r, efiMemoryTypeStrings[desc->type]);
+        print(&r, " ");
+        r.color = 0xffff00ff;
+        print(&r, uint64_to_string(desc->pageCount * 4096 / 1024));
+        print(&r, " ");
+        print(&r, "KB");
+        print(&r, "\n");
+        r.color = 0xff0020ff;
+    }  
+
+    /*
     print(&r, "\n==================== TRITMAP TESTS ====================\n");
     __tryte_buffer(b, 2) = { 0 };
     write_trit(b, 7, TRUE);
@@ -64,22 +79,6 @@ void _start(BOOT_INFO *bootInfo){
         print(&r, trit_to_bstring(read_trit(b, i)));
         print(&r, "\n");
     }
-
-    // print(&r, uint64_to_string(get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize)));
-    
-    /*
-    for(uint64_t i = 0; i < mapEntries; i++) {
-        EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)bootInfo->map + (i * bootInfo->mapDescriptorSize));
-        print(&r, efiMemoryTypeStrings[desc->type]);
-        print(&r, " ");
-        r.color = 0xffff00ff;
-        print(&r, uint64_to_string(desc->pageCount * 4096 / 1024));
-        print(&r, " ");
-        print(&r, "KB");
-        print(&r, "\n");
-        r.color = 0xff0020ff;
-    }
-    */   
 
     print(&r, "\n====================  GATE TESTS  =====================\n");
     __tryte(t) = {0b10010010, 0b10001001, 0b00000000};
@@ -254,4 +253,5 @@ void _start(BOOT_INFO *bootInfo){
     print(&r, "SUM  u, v  (3): ");
     print(&r, tryte_to_tstring(__sum(u, v)));
     print(&r, "\n");
+    */
 }

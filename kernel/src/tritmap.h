@@ -13,6 +13,12 @@
 #include "tryte.h"
 #endif
 
+// Tritmap struct
+typedef struct {
+    size_t size;
+    __tryte_buffer_ptr(buffer);
+} TRITMAP;
+
 // Read trit from tritmap
 BTRIT read_trit(__tryte_buffer_ptr(t), uint64_t index) {
     const uint8_t offset = __trit_offset(index);

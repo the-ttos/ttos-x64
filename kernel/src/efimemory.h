@@ -17,7 +17,9 @@ const char *efiMemoryTypeStrings[] = {
     "EfiLoaderData",
     "EfiBootServicesCode",
     "EfiBootServicesData",
-    "EficConventionalMemory",
+    "EfiRuntimeServicesCode",
+    "EfiRuntimeServicesData"
+    "EfiConventionalMemory",
     "EfiUnusableMemory",
     "EfiACPIReclaimMemory",
     "EfiACPIMemoryNVS",
