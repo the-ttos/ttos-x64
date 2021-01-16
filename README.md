@@ -8,11 +8,9 @@ Make sure to install the build tools by running
 
 `sudo apt-get install build-essential mtools`
 
-Everytime you change the source code, make sure you are in the root folder and run
+Everytime you change the source code, make sure you are in the `kernel` folder and run
+`make bake` to build or `make test` to build and run (Windows only).
 
-`cd kernel`
-
-`make bake`
 ## Emulating the OS
 In the `kernel` directory, run `make run` if you are emulating it on Linux or just click `run.bat` if you are on Windows.
 ## Credits
