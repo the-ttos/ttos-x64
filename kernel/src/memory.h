@@ -12,7 +12,7 @@ uint64_t get_memory_size(EFI_MEMORY_DESCRIPTOR *map, uint64_t mapEntries, uint64
     static uint64_t memorySize = 0;
     if(memorySize) return memorySize;
 
-    for(uint32_t i = 0; i < mapEntries; i++) {
+    for(uint64_t i = 0; i < mapEntries; i++) {
         EFI_MEMORY_DESCRIPTOR *descriptor = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)map + (i * mapDescriptorSize));
         memorySize += descriptor->pageCount * 4096;
     }

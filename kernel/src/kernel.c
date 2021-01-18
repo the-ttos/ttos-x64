@@ -33,7 +33,12 @@
 #include "tritmap.h"
 #endif
 
-#define COLOR_OFFSET 0x00100500
+#ifndef PAGEFRAMEALLOCATOR_H
+#define PAGEFRAMEALLOCATOR_H
+#include "pageframeallocator.h"
+#endif
+
+#define COLOR_OFFSET 0x00030200
 
 typedef struct {
 	FRAMEBUFFER *framebuffer;
@@ -52,19 +57,31 @@ void _start(BOOT_INFO *bootInfo){
     
     uint64_t mapEntries = bootInfo->mapSize / bootInfo->mapDescriptorSize;
 
-    print(&r, uint64_to_string(get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize)));
-    
-    for(uint64_t i = 0; i < mapEntries; i++) {
-        EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)bootInfo->map + (i * bootInfo->mapDescriptorSize));
-        print(&r, efiMemoryTypeStrings[desc->type]);
-        print(&r, " ");
-        r.color = 0xffff00ff;
-        print(&r, uint64_to_string(desc->pageCount * 4096 / 1024));
-        print(&r, " ");
-        print(&r, "KB");
-        print(&r, "\n");
-        r.color = 0xff0020ff;
-    }  
+    read_efi_memory_map(bootInfo->map, bootInfo->mapSize, bootInfo->mapDescriptorSize);
+    print(&r, "Free RAM: ");
+    print(&r, tryte_to_string(get_free_RAM() / 2187));
+    print(&r, " KT\n");
+    print(&r, "Used RAM: ");
+    print(&r, tryte_to_string(get_used_RAM() / 2187));
+    print(&r, " KT\n");
+    print(&r, "Reserved RAM: ");
+    print(&r, tryte_to_string(get_reserved_RAM() / 2187));
+    print(&r, " KT\n");
+
+
+    // print(&r, uint64_to_string(get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize)));
+
+    // for(uint64_t i = 0; i < mapEntries; i++) {
+    //     EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)bootInfo->map + (i * bootInfo->mapDescriptorSize));
+    //     print(&r, efiMemoryTypeStrings[desc->type]);
+    //     print(&r, " ");
+    //     r.color = 0xffff00ff;
+    //     print(&r, uint64_to_string(desc->pageCount * 4096 / 1024));
+    //     print(&r, " ");
+    //     print(&r, "KB");
+    //     print(&r, "\n");
+    //     r.color = 0xff0020ff;
+    // }  
 
     /*
     print(&r, "\n==================== TRITMAP TESTS ====================\n");

@@ -62,6 +62,16 @@ typedef enum {
 // Offset of 0b11 inside a byte
 #define __trit_offset(i) ((BYTE_TRIT - 1 - (i) % BYTE_TRIT) * TRIT_BIT)
 
+// Convert byte to tryte
+uint16_t uint8_to_tryte(uint8_t n) {
+
+}
+
+// Convert 4 bytes to word
+uint64_t uint32_to_word(uint32_t n) {
+
+}
+
 // NOT gate (KARNAUGH)
 // xy | z
 // 00 | 2

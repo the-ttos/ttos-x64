@@ -84,8 +84,10 @@ const char *tryte_to_hstring(__tryte(t)) {
 
 // Trit (2 bits) to balanced trit string
 const char *trit_to_bstring(BTRIT t) {
-    if(t == 0) return "FALSE";
-    if(t == 1) return "UNKNOWN";
-    if(t == 2) return "TRUE";
+    switch(t) {
+        case 0: return "FALSE";
+        case 1: return "UNKNOWN";
+        case 2: return "TRUE";
+    }
     return 0;
 }
