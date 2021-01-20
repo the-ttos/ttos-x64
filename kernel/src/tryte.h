@@ -35,11 +35,14 @@ typedef enum {
 // 1 tryte = 3 bytes
 #define TRYTE_BYTE CEILING(TRYTE_TRIT, BYTE_TRIT)
 
+// 1 word = 3 trytes
+#define TRYTE_WORD CEILING(WORD_TRIT, TRYTE_TRIT)
+
 // 1 word = 9 bytes
 #define WORD_BYTE CEILING(WORD_TRIT, BYTE_TRIT)
 
-// 1 heptavintimal character = 3 trytes
-#define HEPTA_TRYTE (27 / TRYTE_TRIT)
+// 1 heptavintimal character = 3 trits
+#define HEPTA_TRIT (27 / TRYTE_TRIT)
 
 // Tryte macro declaration
 #define __tryte(name) uint8_t name[TRYTE_BYTE]
@@ -49,6 +52,9 @@ typedef enum {
 
 // Tryte buffer macro declaration
 #define __tryte_buffer(name, count) uint8_t name[CEILING(count * TRYTE_TRIT, BYTE_TRIT)]
+
+// Tryte pointer without name (return type) macro declaration
+#define __tryte_buffer_ret uint8_t*
 
 // Tryte pointer macro declaration
 #define __tryte_buffer_ptr(name) uint8_t *name
@@ -63,13 +69,28 @@ typedef enum {
 #define __trit_offset(i) ((BYTE_TRIT - 1 - (i) % BYTE_TRIT) * TRIT_BIT)
 
 // Convert byte to tryte
-uint16_t uint8_to_tryte(uint8_t n) {
-
+__tryte_buffer_ret uint8_to_tryte(uint8_t n) {
+    static __tryte(t);
+    uint8_t i = 0, l = TRYTE_TRIT - 1;
+    while(n) {
+        t[__byte_of_trit(l - i)] &= ~(0b11 << __trit_offset(l - i));
+        t[__byte_of_trit(l - i)] |= (n % 3) << __trit_offset(l - i);
+        n /= 3; i++;
+    }
+    return t;
 }
 
 // Convert 4 bytes to word
-uint64_t uint32_to_word(uint32_t n) {
-
+__tryte_buffer_ret uint64_to_word(uint64_t n) {
+    static __word(t);
+    uint8_t i = 0;
+    while(n) {
+        uint8_t offset =  __trit_offset(WORD_TRIT - 1 - i);
+        t[__byte_of_trit(WORD_TRIT - 1 - i)] &= ~(0b11 << offset);
+        t[__byte_of_trit(WORD_TRIT - 1 - i)] |= (n % 3) << offset;
+        n /= 3; i++;
+    }
+    return t;
 }
 
 // NOT gate (KARNAUGH)

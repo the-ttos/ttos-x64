@@ -21,7 +21,7 @@
 uint64_t freeMemory;
 uint64_t reservedMemory;
 uint64_t usedMemory;
-uint8_t initialized = false;
+uint8_t initialized = 0;
 TRITMAP pageTritmap;
 
 void init_tritmap(size_t bytes, void *bufferAddress, uint8_t extraTrytes) {
@@ -84,7 +84,7 @@ void reserve_pages(void *address, uint64_t pageCount) {
 
 void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapDescriptorSize) {
     if(initialized) return;
-    initialized = true;
+    initialized = 1;
     
     uint64_t mapEntries = mapSize / mapDescriptorSize;
     void *largestFreeMemSeg = NULL;
