@@ -106,11 +106,11 @@ void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapD
     uint64_t memorySize = get_memory_size(map, mapEntries, mapDescriptorSize);
     freeMemory = memorySize;
 
-    // Tritmap size = Memory size in bits / Page size in bits / 8 (Transform to bytes) / 8 * 4 (Transform to trytes)
-    uint64_t tritmapSize = memorySize / 4096 / 8 / 8 * 4;
+    // Transform bytes to trytes
+    uint64_t tritmapSize = ceil((memorySize / 4096 / 8 + 1) * TRYTE_TRIT, BYTE_TRIT);
     init_page_tritmap(tritmapSize, largestFreeMemSeg);
 
-    lock_pages(pageTritmap.buffer, pageTritmap.size / 4096 / 2 + 1);
+    lock_pages(pageTritmap.buffer, pageTritmap.size / 4096 + 1); // !
     
     for(uint32_t i = 0; i < mapEntries; i++) {
         EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)map + (i * mapDescriptorSize));
@@ -120,13 +120,13 @@ void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapD
 }
 
 uint64_t get_free_RAM() {
-    return freeMemory / 2;   
+    return ceil((freeMemory / 8) * TRYTE_TRIT, BYTE_TRIT);   
 }
 
 uint64_t get_used_RAM() {
-    return usedMemory / 2;   
+    return ceil((usedMemory / 8) * TRYTE_TRIT, BYTE_TRIT);   
 }
 
 uint64_t get_reserved_RAM() {
-    return reservedMemory / 2;   
+    return ceil((reservedMemory / 8) * TRYTE_TRIT, BYTE_TRIT);   
 }
