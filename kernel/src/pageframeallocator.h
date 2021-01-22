@@ -18,16 +18,21 @@
 #include "memory.h"
 #endif
 
+#ifndef MATH_H
+#define MATH_H
+#include "math.h"
+#endif
+
 uint64_t freeMemory;
 uint64_t reservedMemory;
 uint64_t usedMemory;
 uint8_t initialized = 0;
 TRITMAP pageTritmap;
 
-void init_tritmap(size_t bytes, void *bufferAddress, uint8_t extraTrytes) {
-    pageTritmap.size = bytes / 8 * 4 + extraTrytes;
+void init_page_tritmap(size_t bytes, void *bufferAddress) {
+    pageTritmap.size = bytes * 4 / 9;
     pageTritmap.buffer = (uint8_t*)bufferAddress;
-    for(uint8_t i = 0; i < pageTritmap.size; i++) *(uint8_t*)(pageTritmap.buffer + i) = 0;
+    for(size_t i = 0; i < ceil(pageTritmap.size * TRYTE_TRIT, BYTE_TRIT); i++) *(uint8_t*)(pageTritmap.buffer + i) = 0;
 }
 
 void free_page(void *address) {
@@ -101,8 +106,9 @@ void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapD
     uint64_t memorySize = get_memory_size(map, mapEntries, mapDescriptorSize);
     freeMemory = memorySize;
 
-    uint64_t tritmapBytes = memorySize / 4096 / 8;
-    init_tritmap(tritmapBytes, largestFreeMemSeg, 1);
+    // Tritmap size = Memory size in bits / Page size in bits / 8 (Transform to bytes) / 8 * 4 (Transform to trytes)
+    uint64_t tritmapSize = memorySize / 4096 / 8 / 8 * 4;
+    init_page_tritmap(tritmapSize, largestFreeMemSeg);
 
     lock_pages(pageTritmap.buffer, pageTritmap.size / 4096 / 2 + 1);
     

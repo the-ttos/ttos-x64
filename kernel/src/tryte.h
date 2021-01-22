@@ -21,7 +21,7 @@ typedef enum {
 } BTRIT;
 
 // 1 trit = 2 bits
-#define TRIT_BIT CEILING(3, 2)
+#define TRIT_BIT CEIL(3, 2)
 
 // 1 tryte = 9 trits
 #define TRYTE_TRIT 9
@@ -33,13 +33,13 @@ typedef enum {
 #define BYTE_TRIT (CHAR_BIT / TRIT_BIT)
 
 // 1 tryte = 3 bytes
-#define TRYTE_BYTE CEILING(TRYTE_TRIT, BYTE_TRIT)
+#define TRYTE_BYTE CEIL(TRYTE_TRIT, BYTE_TRIT)
 
 // 1 word = 3 trytes
-#define TRYTE_WORD CEILING(WORD_TRIT, TRYTE_TRIT)
+#define TRYTE_WORD CEIL(WORD_TRIT, TRYTE_TRIT)
 
 // 1 word = 9 bytes
-#define WORD_BYTE CEILING(WORD_TRIT, BYTE_TRIT)
+#define WORD_BYTE CEIL(WORD_TRIT, BYTE_TRIT)
 
 // 1 heptavintimal character = 3 trits
 #define HEPTA_TRIT (27 / TRYTE_TRIT)
@@ -51,7 +51,7 @@ typedef enum {
 #define __tryte_ptr(name) uint8_t *(name)[TRYTE_BYTE]
 
 // Tryte buffer macro declaration
-#define __tryte_buffer(name, count) uint8_t name[CEILING(count * TRYTE_TRIT, BYTE_TRIT)]
+#define __tryte_buffer(name, count) uint8_t name[CEIL(count * TRYTE_TRIT, BYTE_TRIT)]
 
 // Tryte pointer without name (return type) macro declaration
 #define __tryte_buffer_ret uint8_t*

@@ -57,23 +57,23 @@ void _start(BOOT_INFO *bootInfo){
     
     uint64_t mapEntries = bootInfo->mapSize / bootInfo->mapDescriptorSize;
 
-    // read_efi_memory_map(bootInfo->map, bootInfo->mapSize, bootInfo->mapDescriptorSize);
-    // print(&r, "Free RAM: ");
-    // print(&r, tryte_to_string(get_free_RAM() / 2187));
-    // print(&r, " KT\n");
-    // print(&r, "Used RAM: ");
-    // print(&r, tryte_to_string(get_used_RAM() / 2187));
-    // print(&r, " KT\n");
-    // print(&r, "Reserved RAM: ");
-    // print(&r, tryte_to_string(get_reserved_RAM() / 2187));
-    // print(&r, " KT\n");
+    read_efi_memory_map(bootInfo->map, bootInfo->mapSize, bootInfo->mapDescriptorSize);
+    print(&r, "Free RAM: ");
+    print(&r, uint64_to_string(get_free_RAM() / 2187));
+    print(&r, " KT\n");
+    print(&r, "Used RAM: ");
+    print(&r, uint64_to_string(get_used_RAM() / 2187));
+    print(&r, " KT\n");
+    print(&r, "Reserved RAM: ");
+    print(&r, uint64_to_string(get_reserved_RAM() / 2187));
+    print(&r, " KT\n");
 
-    print(&r, word_to_string(uint64_to_word(538968128)));
-    print(&r, "\n");
-    print(&r, word_to_hstring(uint64_to_word(538968128)));
-    print(&r, "\n");
-    print(&r, word_to_tstring(uint64_to_word(538968128)));
-    print(&r, "\n");
+    // print(&r, word_to_string(uint64_to_word(538968128)));
+    // print(&r, "\n");
+    // print(&r, word_to_hstring(uint64_to_word(538968128)));
+    // print(&r, "\n");
+    // print(&r, word_to_tstring(uint64_to_word(538968128)));
+    // print(&r, "\n");
 
     // print(&r, uint64_to_string(get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize)));
 
