@@ -9,15 +9,15 @@
 #endif
 
 typedef enum {
-    TWA,
-    TWE,
-    TWI
+    TWA = 0b00,
+    TWE = 0b01,
+    TWI = 0b10
 } UTRIT;
 
 typedef enum {
-    FALSE,
-    UNKNOWN,
-    TRUE
+    tFALSE      = 0b00,
+    tUNKNOWN    = 0b01,
+    tTRUE       = 0b10
 } BTRIT;
 
 // 1 trit = 2 bits

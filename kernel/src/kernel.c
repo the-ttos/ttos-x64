@@ -98,12 +98,12 @@ void _start(BOOT_INFO *bootInfo){
     /*
     print(&r, "\n==================== TRITMAP TESTS ====================\n");
     __tryte_buffer(b, 2) = { 0 };
-    write_trit(b, 7, TRUE);
-    write_trit(b, 8, UNKNOWN);
-    write_trit(b, 9, FALSE);
-    write_trit(b, 10, UNKNOWN);
-    write_trit(b, 11, UNKNOWN);
-    write_trit(b, 12, TRUE);
+    write_trit(b, 7, tTRUE);
+    write_trit(b, 8, tUNKNOWN);
+    write_trit(b, 9, tFALSE);
+    write_trit(b, 10, tUNKNOWN);
+    write_trit(b, 11, tUNKNOWN);
+    write_trit(b, 12, tTRUE);
     for(uint8_t i = 7; i < 13; i++) {
         print(&r, trit_to_bstring(read_trit(b, i)));
         print(&r, "\n");

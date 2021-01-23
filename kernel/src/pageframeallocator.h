@@ -8,10 +8,11 @@
 #include <stdint.h>
 #endif
 
-#ifndef TRITMAP_H
-#define TRITMAP_H
-#include "tritmap.h"
+#ifndef BITMAP_H
+#define BITMAP_H
+#include "bitmap.h"
 #endif
+
 
 #ifndef MEMORY_H
 #define MEMORY_H
@@ -23,46 +24,52 @@
 #include "math.h"
 #endif
 
+#ifndef TRYTE_H
+#define TRYTE_H
+#include "tryte.h"
+#endif
+
+
 uint64_t freeMemory;
 uint64_t reservedMemory;
 uint64_t usedMemory;
 uint8_t initialized = 0;
-TRITMAP pageTritmap;
+TRITMAP pageBitmap;
 
-void init_page_tritmap(size_t bytes, void *bufferAddress) {
-    pageTritmap.size = bytes * 4 / 9;
-    pageTritmap.buffer = (uint8_t*)bufferAddress;
-    for(size_t i = 0; i < ceil(pageTritmap.size * TRYTE_TRIT, BYTE_TRIT); i++) *(uint8_t*)(pageTritmap.buffer + i) = 0;
+void init_page_bitmap(size_t bytes, void *bufferAddress) {
+    pageBitmap.size = bytes;
+    pageBitmap.buffer = (uint8_t*)bufferAddress;
+    for(size_t i = 0; i < pageBitmap.size; i++) *(uint8_t*)(pageBitmap.buffer + i) = 0;
 }
 
 void free_page(void *address) {
-    uint64_t index = (uint64_t)address / 4096 / 2;
-    if(read_trit(pageTritmap.buffer, index) != TRUE) return;
-    write_trit(pageTritmap.buffer, index, FALSE);
+    uint64_t index = (uint64_t)address / 4096;
+    if(!read_bit(pageBitmap.buffer, index)) return;
+    write_bit(pageBitmap.buffer, index, false);
     freeMemory += 4096;
     usedMemory -= 4096;
 }
 
 void lock_page(void *address) {
-    uint64_t index = (uint64_t)address / 4096 / 2;
-    if(read_trit(pageTritmap.buffer, index) == TRUE) return;
-    write_trit(pageTritmap.buffer, index, TRUE);
+    uint64_t index = (uint64_t)address / 4096;
+    if(read_bit(pageBitmap.buffer, index)) return;
+    write_bit(pageBitmap.buffer, index, true);
     freeMemory -= 4096;
     usedMemory += 4096;
 }
 
 void unreserve_page(void *address) {
-    uint64_t index = (uint64_t)address / 4096 / 2;
-    if(read_trit(pageTritmap.buffer, index) != TRUE) return;
-    write_trit(pageTritmap.buffer, index, FALSE);
+    uint64_t index = (uint64_t)address / 4096;
+    if(!read_bit(pageBitmap.buffer, index)) return;
+    write_bit(pageBitmap.buffer, index, false);
     freeMemory += 4096;
     reservedMemory -= 4096;
 }
 
 void reserve_page(void *address) {
-    uint64_t index = (uint64_t)address / 4096 / 2;
-    if(read_trit(pageTritmap.buffer, index) == TRUE) return;
-    write_trit(pageTritmap.buffer, index, TRUE);
+    uint64_t index = (uint64_t)address / 4096;
+    if(read_bit(pageBitmap.buffer, index)) return;
+    write_bit(pageBitmap.buffer, index, true);
     freeMemory -= 4096;
     reservedMemory += 4096;
 }
@@ -87,6 +94,15 @@ void reserve_pages(void *address, uint64_t pageCount) {
         reserve_page((void*)((uint64_t)address + (i * 4096)));
 }
 
+void *request_page(void *address) {
+    for(uint64_t i = 0; i < pageBitmap.size * CHAR_BIT; i++) {
+        if(read_bit(pageBitmap.buffer, i)) continue;
+        lock_page((void*)(i * 4096));
+        return (void*)(i * 4096);
+    }
+    return NULL;
+}
+
 void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapDescriptorSize) {
     if(initialized) return;
     initialized = 1;
@@ -106,11 +122,10 @@ void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapD
     uint64_t memorySize = get_memory_size(map, mapEntries, mapDescriptorSize);
     freeMemory = memorySize;
 
-    // Transform bytes to trytes
-    uint64_t tritmapSize = (memorySize / 4096 / CHAR_BIT + 1) * BYTE_TRIT / TRYTE_TRIT;
-    init_page_tritmap(tritmapSize, largestFreeMemSeg);
+    uint64_t bitmapSize = memorySize / 4096 / CHAR_BIT + 1;
+    init_page_bitmap(bitmapSize, largestFreeMemSeg);
 
-    lock_pages(pageTritmap.buffer, pageTritmap.size * BYTE_TRIT / TRYTE_TRIT / 4096 + 1); // !
+    lock_pages(pageBitmap.buffer, pageBitmap.size / 4096 + 1);
     
     for(uint32_t i = 0; i < mapEntries; i++) {
         EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)map + (i * mapDescriptorSize));
