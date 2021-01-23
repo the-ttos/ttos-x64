@@ -49,7 +49,7 @@ typedef struct {
 } BOOT_INFO;
 
 void _start(BOOT_INFO *bootInfo){
-    RENDERER r = {bootInfo->framebuffer, ANCHOR, bootInfo->font, 0xff0020ff};
+    RENDERER r = {bootInfo->framebuffer, ANCHOR, bootInfo->font, 0xfffbc531};
 
     for(uint16_t i = 0; i < bootInfo->framebuffer->width * 4; i++)
         for(uint16_t j = 0; j < bootInfo->framebuffer->height; j++)
@@ -59,14 +59,20 @@ void _start(BOOT_INFO *bootInfo){
 
     read_efi_memory_map(bootInfo->map, bootInfo->mapSize, bootInfo->mapDescriptorSize);
     print(&r, "Free RAM: ");
-    print(&r, uint64_to_string(get_free_RAM() / 2187));
-    print(&r, " KT\n");
+    print(&r, uint64_to_string(get_free_RAM() / METRI));
+    print(&r, ".");
+    print(&r, uint64_to_string((get_free_RAM() * 100 / METRI) - (get_free_RAM() / METRI) * 100));
+    print(&r, " MT\n");
     print(&r, "Used RAM: ");
-    print(&r, uint64_to_string(get_used_RAM() / 2187));
+    print(&r, uint64_to_string(get_used_RAM() / KITRI));
+    print(&r, ".");
+    print(&r, uint64_to_string((get_used_RAM() * 100 / KITRI) - (get_used_RAM() / KITRI * 100)));
     print(&r, " KT\n");
     print(&r, "Reserved RAM: ");
-    print(&r, uint64_to_string(get_reserved_RAM() / 2187));
-    print(&r, " KT\n");
+    print(&r, uint64_to_string(get_reserved_RAM() / METRI));
+    print(&r, ".");
+    print(&r, uint64_to_string((get_reserved_RAM() * 100 / METRI) - (get_reserved_RAM() / METRI * 100)));
+    print(&r, " MT\n");
 
     // print(&r, word_to_string(uint64_to_word(538968128)));
     // print(&r, "\n");

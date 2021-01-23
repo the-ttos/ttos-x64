@@ -44,6 +44,18 @@ typedef enum {
 // 1 heptavintimal character = 3 trits
 #define HEPTA_TRIT (27 / TRYTE_TRIT)
 
+// 1 Kitri (Kt) = 3^7 = 2187
+#define KITRI 2187
+
+// 1 Metri (Mt) = 3^7^2 = 2187^2 = 4782969
+#define METRI 4782969
+
+// 1 Gitri (Gt) = 3^7^3 = 2187^3 = 10460353203
+#define GITRI 10460353203
+
+// 1 Tetri (Tt) = 3^7^4 = 2187^4 = 22876792454961
+#define TETRI 22876792454961
+
 // Tryte macro declaration
 #define __tryte(name) uint8_t name[TRYTE_BYTE]
 

@@ -84,7 +84,7 @@ void unreserve_pages(void *address, uint64_t pageCount) {
 
 void reserve_pages(void *address, uint64_t pageCount) {
     for(uint64_t i = 0; i < pageCount; i++)
-        unreserve_page((void*)((uint64_t)address + (i * 4096)));
+        reserve_page((void*)((uint64_t)address + (i * 4096)));
 }
 
 void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapDescriptorSize) {
@@ -107,10 +107,10 @@ void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapD
     freeMemory = memorySize;
 
     // Transform bytes to trytes
-    uint64_t tritmapSize = ceil((memorySize / 4096 / 8 + 1) * TRYTE_TRIT, BYTE_TRIT);
+    uint64_t tritmapSize = (memorySize / 4096 / CHAR_BIT + 1) * BYTE_TRIT / TRYTE_TRIT;
     init_page_tritmap(tritmapSize, largestFreeMemSeg);
 
-    lock_pages(pageTritmap.buffer, pageTritmap.size / 4096 + 1); // !
+    lock_pages(pageTritmap.buffer, pageTritmap.size * BYTE_TRIT / TRYTE_TRIT / 4096 + 1); // !
     
     for(uint32_t i = 0; i < mapEntries; i++) {
         EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)map + (i * mapDescriptorSize));
@@ -119,14 +119,17 @@ void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapD
     }
 }
 
+// Free RAM in trytes
 uint64_t get_free_RAM() {
-    return ceil((freeMemory / 8) * TRYTE_TRIT, BYTE_TRIT);   
+    return freeMemory * BYTE_TRIT / TRYTE_TRIT;   
 }
 
+// Used RAM in trytes
 uint64_t get_used_RAM() {
-    return ceil((usedMemory / 8) * TRYTE_TRIT, BYTE_TRIT);   
+    return usedMemory * BYTE_TRIT / TRYTE_TRIT;
 }
 
+// Reserved RAM in trytes
 uint64_t get_reserved_RAM() {
-    return ceil((reservedMemory / 8) * TRYTE_TRIT, BYTE_TRIT);   
+    return reservedMemory * BYTE_TRIT / TRYTE_TRIT; 
 }
