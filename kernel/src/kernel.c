@@ -35,7 +35,7 @@
 
 #ifndef PAGEFRAMEALLOCATOR_H
 #define PAGEFRAMEALLOCATOR_H
-#include "pageframeallocator.h"
+#include "paging/pageframeallocator.h"
 #endif
 
 #define COLOR_OFFSET 0x00030200

@@ -10,25 +10,23 @@
 
 #ifndef BITMAP_H
 #define BITMAP_H
-#include "bitmap.h"
+#include "../bitmap.h"
 #endif
-
 
 #ifndef MEMORY_H
 #define MEMORY_H
-#include "memory.h"
+#include "../memory.h"
 #endif
 
 #ifndef MATH_H
 #define MATH_H
-#include "math.h"
+#include "../math.h"
 #endif
 
 #ifndef TRYTE_H
 #define TRYTE_H
-#include "tryte.h"
+#include "../tryte.h"
 #endif
-
 
 uint64_t freeMemory;
 uint64_t reservedMemory;
