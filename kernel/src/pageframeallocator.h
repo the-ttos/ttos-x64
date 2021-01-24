@@ -94,7 +94,7 @@ void reserve_pages(void *address, uint64_t pageCount) {
         reserve_page((void*)((uint64_t)address + (i * 4096)));
 }
 
-void *request_page(void *address) {
+void *request_page() {
     for(uint64_t i = 0; i < pageBitmap.size * CHAR_BIT; i++) {
         if(read_bit(pageBitmap.buffer, i)) continue;
         lock_page((void*)(i * 4096));
@@ -122,10 +122,10 @@ void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapD
     uint64_t memorySize = get_memory_size(map, mapEntries, mapDescriptorSize);
     freeMemory = memorySize;
 
-    uint64_t bitmapSize = memorySize / 4096 / CHAR_BIT + 1;
+    uint64_t bitmapSize = ceil(memorySize / 4096, 8);
     init_page_bitmap(bitmapSize, largestFreeMemSeg);
 
-    lock_pages(pageBitmap.buffer, pageBitmap.size / 4096 + 1);
+    lock_pages(pageBitmap.buffer, ceil(pageBitmap.size / 4096, 8));
     
     for(uint32_t i = 0; i < mapEntries; i++) {
         EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)map + (i * mapDescriptorSize));

@@ -23,5 +23,5 @@ uint64_t power_uint8(const uint8_t base, const uint8_t exponent) {
 // Ceil function
 uint64_t ceil(const uint32_t x, const uint32_t y) {
     uint64_t z = x;
-    return (((z) + (y) - 1) / (y));
+    return (z + y - 1) / y;
 }

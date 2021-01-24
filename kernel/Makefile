@@ -47,15 +47,11 @@ buildimg:
 	mcopy -i $(BUILDDIR)/$(OSNAME).img $(BUILDDIR)/kernel.elf ::
 	mcopy -i $(BUILDDIR)/$(OSNAME).img $(BUILDDIR)/zap-light16.psf ::
 
-bake:
-	@ echo !==== BAKING $^
+test:
 	make kernel
 	make -C ../gnu-efi
 	make -C ../gnu-efi bootloader
 	make buildimg
-
-test:
-	make bake
 	-explorer.exe run.bat
 
 run:

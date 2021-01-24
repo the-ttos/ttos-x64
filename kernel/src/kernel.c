@@ -48,7 +48,11 @@ typedef struct {
 	uint64_t mapDescriptorSize;
 } BOOT_INFO;
 
-void _start(BOOT_INFO *bootInfo){
+
+extern uint64_t _kernelStart;
+extern uint64_t _kernelEnd;
+
+extern void _start(BOOT_INFO *bootInfo){
     RENDERER r = {bootInfo->framebuffer, ANCHOR, bootInfo->font, 0xfffbc531};
 
     for(uint16_t i = 0; i < bootInfo->framebuffer->width * 4; i++)
@@ -58,6 +62,12 @@ void _start(BOOT_INFO *bootInfo){
     uint64_t mapEntries = bootInfo->mapSize / bootInfo->mapDescriptorSize;
 
     read_efi_memory_map(bootInfo->map, bootInfo->mapSize, bootInfo->mapDescriptorSize);
+
+    uint64_t kernelSize = (uint64_t)&_kernelEnd - (uint64_t)&_kernelStart;
+    uint64_t kernelPages = ceil(kernelSize, 4092);
+
+    lock_pages(&_kernelStart, kernelPages);
+
     print(&r, "Free RAM: ");
     print(&r, uint64_to_string(get_free_RAM() / METRI));
     print(&r, ".");
@@ -73,6 +83,12 @@ void _start(BOOT_INFO *bootInfo){
     print(&r, ".");
     print(&r, uint64_to_string((get_reserved_RAM() * 100 / METRI) - (get_reserved_RAM() / METRI * 100)));
     print(&r, " MT\n");
+
+    for(uint8_t i = 0; i < 5; i++) {
+        void *address = request_page();
+        print(&r, uint64_to_string((uint64_t)address));
+        print(&r, "\n");
+    }
 
     // print(&r, word_to_string(uint64_to_word(538968128)));
     // print(&r, "\n");

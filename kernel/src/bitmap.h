@@ -26,11 +26,11 @@ typedef struct {
 
 // Read bit from bitmap
 bool read_bit(uint8_t *buffer, uint64_t index) {
-    return buffer[index / CHAR_BIT] & 1 >> index % CHAR_BIT;
+    return (buffer[index / CHAR_BIT] & 1 << (CHAR_BIT - index) % CHAR_BIT) ? true : false;
 }
 
 // Write bit to bitmap at index
 void write_bit(uint8_t *buffer, uint64_t index, bool bit) {
-    buffer[index / CHAR_BIT] &= ~(1 >> index % CHAR_BIT);
-    buffer[index / CHAR_BIT] |= bit >> index % CHAR_BIT;
+    buffer[index / CHAR_BIT] &= ~(1 << (CHAR_BIT - index) % CHAR_BIT);
+    buffer[index / CHAR_BIT] |= bit << (CHAR_BIT - index) % CHAR_BIT;
 }
