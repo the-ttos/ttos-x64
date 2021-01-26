@@ -38,21 +38,26 @@
 #include "paging/pageframeallocator.h"
 #endif
 
-#define COLOR_OFFSET 0x00030200
+#ifndef PAGING_H
+#define PAGING_H
+#include "paging/paging.h"
+#endif
 
-typedef struct {
-	FRAMEBUFFER *framebuffer;
-	PSF1_FONT *font;
-	EFI_MEMORY_DESCRIPTOR *map;
-	uint64_t mapSize;
-	uint64_t mapDescriptorSize;
-} BOOT_INFO;
+#ifndef PAGEMAPINDEXER_H
+#define PAGEMAPINDEXER_H
+#include "paging/pagemapindexer.h"
+#endif
 
+#ifndef BOOT_H
+#define BOOT_H
+#include "boot.h"
+#endif
 
 extern uint64_t _kernelStart;
 extern uint64_t _kernelEnd;
 
-extern void _start(BOOT_INFO *bootInfo){
+extern void _start(BOOT_INFO *b){
+    bootInfo = b;
     RENDERER r = {bootInfo->framebuffer, ANCHOR, bootInfo->font, 0xfffbc531};
 
     for(uint16_t i = 0; i < bootInfo->framebuffer->width * 4; i++)
@@ -64,9 +69,19 @@ extern void _start(BOOT_INFO *bootInfo){
     read_efi_memory_map(bootInfo->map, bootInfo->mapSize, bootInfo->mapDescriptorSize);
 
     uint64_t kernelSize = (uint64_t)&_kernelEnd - (uint64_t)&_kernelStart;
-    uint64_t kernelPages = ceil(kernelSize, 4092);
+    uint64_t kernelPages = ceil(kernelSize, PAGE_BYTE);
 
     lock_pages(&_kernelStart, kernelPages);
+
+    PAGE_MAP_INDEXER pMap = new_page_map_indexer(0x1000 * 52 + 0x50000 * 7);
+    print(&r, uint64_to_string(pMap.P_i));
+    print(&r, "\n");
+    print(&r, uint64_to_string(pMap.PT_i));
+    print(&r, "\n");
+    print(&r, uint64_to_string(pMap.PD_i));
+    print(&r, "\n");
+    print(&r, uint64_to_string(pMap.PDP_i));
+    print(&r, "\n");
 
     print(&r, "Free RAM: ");
     print(&r, uint64_to_string(get_free_RAM() / METRI));
@@ -83,33 +98,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, ".");
     print(&r, uint64_to_string((get_reserved_RAM() * 100 / METRI) - (get_reserved_RAM() / METRI * 100)));
     print(&r, " MT\n");
-
-    for(uint8_t i = 0; i < 5; i++) {
-        void *address = request_page();
-        print(&r, uint64_to_string((uint64_t)address));
-        print(&r, "\n");
-    }
-
-    // print(&r, word_to_string(uint64_to_word(538968128)));
-    // print(&r, "\n");
-    // print(&r, word_to_hstring(uint64_to_word(538968128)));
-    // print(&r, "\n");
-    // print(&r, word_to_tstring(uint64_to_word(538968128)));
-    // print(&r, "\n");
-
-    // print(&r, uint64_to_string(get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize)));
-
-    // for(uint64_t i = 0; i < mapEntries; i++) {
-    //     EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)bootInfo->map + (i * bootInfo->mapDescriptorSize));
-    //     print(&r, efiMemoryTypeStrings[desc->type]);
-    //     print(&r, " ");
-    //     r.color = 0xffff00ff;
-    //     print(&r, uint64_to_string(desc->pageCount * 4096 / 1024));
-    //     print(&r, " ");
-    //     print(&r, "KB");
-    //     print(&r, "\n");
-    //     r.color = 0xff0020ff;
-    // }  
 
     /*
     print(&r, "\n==================== TRITMAP TESTS ====================\n");
@@ -136,7 +124,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "ID  t  (3): ");
     print(&r, tryte_to_tstring(t));
     print(&r, "\n");
-    r.color += COLOR_OFFSET;
     print(&r, "NOT t (27): ");
     print(&r, tryte_to_hstring(__not(t)));
     print(&r, "\n");
@@ -145,7 +132,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "\n");
     print(&r, "NOT t  (3): ");
     print(&r, tryte_to_tstring(__not(t)));
-    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "INC t (27): ");
     print(&r, tryte_to_hstring(__inc(t)));
@@ -155,7 +141,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "\n");
     print(&r, "INC t  (3): ");
     print(&r, tryte_to_tstring(__inc(t)));
-    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "DEC t (27): ");
     print(&r, tryte_to_hstring(__dec(t)));
@@ -165,7 +150,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "\n");
     print(&r, "DEC t  (3): ");
     print(&r, tryte_to_tstring(__dec(t)));
-    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "ISF t (27): ");
     print(&r, tryte_to_hstring(__isf(t)));
@@ -175,7 +159,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "\n");
     print(&r, "ISF t  (3): ");
     print(&r, tryte_to_tstring(__isf(t)));
-    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "ISU t (27): ");
     print(&r, tryte_to_hstring(__isu(t)));
@@ -185,7 +168,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "\n");
     print(&r, "ISU t  (3): ");
     print(&r, tryte_to_tstring(__isu(t)));
-    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "IST t (27): ");
     print(&r, tryte_to_hstring(__ist(t)));
@@ -195,7 +177,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "\n");
     print(&r, "IST t  (3): ");
     print(&r, tryte_to_tstring(__ist(t)));
-    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "CLD t (27): ");
     print(&r, tryte_to_hstring(__cld(t)));
@@ -205,7 +186,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "\n");
     print(&r, "CLD t  (3): ");
     print(&r, tryte_to_tstring(__cld(t)));
-    r.color += COLOR_OFFSET;
     print(&r, "\n");
     print(&r, "CLU t (27): ");
     print(&r, tryte_to_hstring(__clu(t)));
@@ -217,7 +197,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, tryte_to_tstring(__clu(t)));
     print(&r, "\n");
     __tryte(u) = {0b00000001, 0b01011010, 0b10000000};
-    r.color += COLOR_OFFSET;
     print(&r, "ID  u (27): ");
     print(&r, tryte_to_hstring(u));
     print(&r, "\n");
@@ -228,7 +207,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, tryte_to_tstring(u));
     print(&r, "\n");
     __tryte(v) = {0b00011000, 0b01100001, 0b10000000};
-    r.color += COLOR_OFFSET;
     print(&r, "ID  v (27): ");
     print(&r, tryte_to_hstring(v));
     print(&r, "\n");
@@ -238,7 +216,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "ID  v  (3): ");
     print(&r, tryte_to_tstring(v));
     print(&r, "\n");
-    r.color += COLOR_OFFSET;
     print(&r, "AND u, v (27): ");
     print(&r, tryte_to_hstring(__and(u, v)));
     print(&r, "\n");
@@ -248,7 +225,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "AND u, v  (3): ");
     print(&r, tryte_to_tstring(__and(u, v)));
     print(&r, "\n");
-    r.color += COLOR_OFFSET;
     print(&r, "OR  u, v (27): ");
     print(&r, tryte_to_hstring(__or(u, v)));
     print(&r, "\n");
@@ -258,7 +234,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "OR  u, v  (3): ");
     print(&r, tryte_to_tstring(__or(u, v)));
     print(&r, "\n");
-    r.color += COLOR_OFFSET;
     print(&r, "NAND  u, v (27): ");
     print(&r, tryte_to_hstring(__nand(u, v)));
     print(&r, "\n");
@@ -268,7 +243,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "NAND  u, v  (3): ");
     print(&r, tryte_to_tstring(__nand(u, v)));
     print(&r, "\n");
-    r.color += COLOR_OFFSET;
     print(&r, "NOR  u, v (27): ");
     print(&r, tryte_to_hstring(__nor(u, v)));
     print(&r, "\n");
@@ -278,7 +252,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "NOR  u, v  (3): ");
     print(&r, tryte_to_tstring(__nor(u, v)));
     print(&r, "\n");
-    r.color += COLOR_OFFSET;
     print(&r, "XOR  u, v (27): ");
     print(&r, tryte_to_hstring(__xor(u, v)));
     print(&r, "\n");
@@ -288,7 +261,6 @@ extern void _start(BOOT_INFO *bootInfo){
     print(&r, "XOR  u, v  (3): ");
     print(&r, tryte_to_tstring(__xor(u, v)));
     print(&r, "\n");
-    r.color += COLOR_OFFSET;
     print(&r, "SUM  u, v (27): ");
     print(&r, tryte_to_hstring(__sum(u, v)));
     print(&r, "\n");

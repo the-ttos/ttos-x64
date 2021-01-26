@@ -56,6 +56,12 @@ typedef enum {
 // 1 Tetri (Tt) = 3^7^4 = 2187^4 = 22876792454961
 #define TETRI 22876792454961
 
+// Page size in bytes = 4096
+#define PAGE_BYTE 4096
+
+// Page size in trytes = 1820
+#define PAGE_TRYTE PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT
+
 // Tryte macro declaration
 #define __tryte(name) uint8_t name[TRYTE_BYTE]
 

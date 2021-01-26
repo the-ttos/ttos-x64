@@ -32,7 +32,7 @@ uint64_t freeMemory;
 uint64_t reservedMemory;
 uint64_t usedMemory;
 uint8_t initialized = 0;
-TRITMAP pageBitmap;
+BITMAP pageBitmap;
 
 void init_page_bitmap(size_t bytes, void *bufferAddress) {
     pageBitmap.size = bytes;
@@ -41,62 +41,62 @@ void init_page_bitmap(size_t bytes, void *bufferAddress) {
 }
 
 void free_page(void *address) {
-    uint64_t index = (uint64_t)address / 4096;
+    uint64_t index = (uint64_t)address / PAGE_BYTE;
     if(!read_bit(pageBitmap.buffer, index)) return;
     write_bit(pageBitmap.buffer, index, false);
-    freeMemory += 4096;
-    usedMemory -= 4096;
+    freeMemory += PAGE_TRYTE;
+    usedMemory -= PAGE_TRYTE;
 }
 
 void lock_page(void *address) {
-    uint64_t index = (uint64_t)address / 4096;
+    uint64_t index = (uint64_t)address / PAGE_BYTE;
     if(read_bit(pageBitmap.buffer, index)) return;
     write_bit(pageBitmap.buffer, index, true);
-    freeMemory -= 4096;
-    usedMemory += 4096;
+    freeMemory -= PAGE_TRYTE;
+    usedMemory += PAGE_TRYTE;
 }
 
 void unreserve_page(void *address) {
-    uint64_t index = (uint64_t)address / 4096;
+    uint64_t index = (uint64_t)address / PAGE_BYTE;
     if(!read_bit(pageBitmap.buffer, index)) return;
     write_bit(pageBitmap.buffer, index, false);
-    freeMemory += 4096;
-    reservedMemory -= 4096;
+    freeMemory += PAGE_TRYTE;
+    reservedMemory -= PAGE_TRYTE;
 }
 
 void reserve_page(void *address) {
-    uint64_t index = (uint64_t)address / 4096;
+    uint64_t index = (uint64_t)address / PAGE_BYTE;
     if(read_bit(pageBitmap.buffer, index)) return;
     write_bit(pageBitmap.buffer, index, true);
-    freeMemory -= 4096;
-    reservedMemory += 4096;
+    freeMemory -= PAGE_TRYTE;
+    reservedMemory += PAGE_TRYTE;
 }
 
 void free_pages(void *address, uint64_t pageCount) {
     for(uint64_t i = 0; i < pageCount; i++)
-        free_page((void*)((uint64_t)address + (i * 4096)));
+        free_page((void*)((uint64_t)address + (i * PAGE_BYTE)));
 }
 
 void lock_pages(void *address, uint64_t pageCount) {
     for(uint64_t i = 0; i < pageCount; i++)
-        lock_page((void*)((uint64_t)address + (i * 4096)));
+        lock_page((void*)((uint64_t)address + (i * PAGE_BYTE)));
 }
 
 void unreserve_pages(void *address, uint64_t pageCount) {
     for(uint64_t i = 0; i < pageCount; i++)
-        unreserve_page((void*)((uint64_t)address + (i * 4096)));
+        unreserve_page((void*)((uint64_t)address + (i * PAGE_BYTE)));
 }
 
 void reserve_pages(void *address, uint64_t pageCount) {
     for(uint64_t i = 0; i < pageCount; i++)
-        reserve_page((void*)((uint64_t)address + (i * 4096)));
+        reserve_page((void*)((uint64_t)address + (i * PAGE_BYTE)));
 }
 
 void *request_page() {
-    for(uint64_t i = 0; i < pageBitmap.size * CHAR_BIT; i++) {
+    for(uint64_t i = 0; i < pageBitmap.size * PAGE_TRYTE; i++) {
         if(read_bit(pageBitmap.buffer, i)) continue;
-        lock_page((void*)(i * 4096));
-        return (void*)(i * 4096);
+        lock_page((void*)(i * PAGE_BYTE));
+        return (void*)(i * PAGE_BYTE);
     }
     return NULL;
 }
@@ -111,19 +111,19 @@ void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapD
     
     for(uint32_t i = 0; i < mapEntries; i++) {
         EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)map + (i * mapDescriptorSize));
-        if(desc->type == 7 && desc->pageCount * 4096 > largestFreeMemSegSize) { // type = EfiConventionalMemory
+        if(desc->type == 7 && desc->pageCount * PAGE_TRYTE > largestFreeMemSegSize) { // type = EfiConventionalMemory
             largestFreeMemSeg = desc->physicalAddress;
-            largestFreeMemSegSize = desc->pageCount * 4096;
+            largestFreeMemSegSize = desc->pageCount * PAGE_TRYTE;
         }
     }
 
     uint64_t memorySize = get_memory_size(map, mapEntries, mapDescriptorSize);
     freeMemory = memorySize;
 
-    uint64_t bitmapSize = ceil(memorySize / 4096, 8);
+    uint64_t bitmapSize = ceil(memorySize / PAGE_TRYTE, CHAR_BIT);
     init_page_bitmap(bitmapSize, largestFreeMemSeg);
 
-    lock_pages(pageBitmap.buffer, ceil(pageBitmap.size / 4096, 8));
+    lock_pages(pageBitmap.buffer, ceil(pageBitmap.size / PAGE_TRYTE, CHAR_BIT));
     
     for(uint32_t i = 0; i < mapEntries; i++) {
         EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)map + (i * mapDescriptorSize));
@@ -134,15 +134,15 @@ void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapD
 
 // Free RAM in trytes
 uint64_t get_free_RAM() {
-    return freeMemory * BYTE_TRIT / TRYTE_TRIT;   
+    return freeMemory;   
 }
 
 // Used RAM in trytes
 uint64_t get_used_RAM() {
-    return usedMemory * BYTE_TRIT / TRYTE_TRIT;
+    return usedMemory;
 }
 
 // Reserved RAM in trytes
 uint64_t get_reserved_RAM() {
-    return reservedMemory * BYTE_TRIT / TRYTE_TRIT; 
+    return reservedMemory; 
 }
