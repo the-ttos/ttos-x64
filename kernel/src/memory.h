@@ -18,7 +18,6 @@
 #include "boot.h"
 #endif
 
-
 uint64_t get_memory_size(EFI_MEMORY_DESCRIPTOR *map, uint64_t mapEntries, uint64_t mapDescriptorSize) {
     static uint64_t memorySize = 0;
     if(memorySize) return memorySize;
@@ -30,19 +29,28 @@ uint64_t get_memory_size(EFI_MEMORY_DESCRIPTOR *map, uint64_t mapEntries, uint64
     return memorySize;
 }
 
-__tryte_buffer_ret tryte_at(void *address) {
-    return (__tryte_buffer_ret)((((uint64_t)address - (uint64_t)bootInfo->map->physicalAddress)
-        * BYTE_TRIT / TRYTE_TRIT * TRYTE_TRIT / BYTE_TRIT) + (uint64_t)bootInfo->map->physicalAddress);
+__tryte_buffer_ret tryte_at(__tryte_buffer_ptr(t)) {
+    return (__tryte_buffer_ret)((uint64_t)t * BYTE_TRIT / TRYTE_TRIT * TRYTE_TRIT / BYTE_TRIT);
 }
 
-void set_tryte(void *address, __tryte(value)) {
+__tryte_buffer_ret next_tryte_at(__tryte_buffer_ptr(t)) {
+    return (__tryte_buffer_ret)(t + (TRYTE_TRIT - (uint64_t)t * BYTE_TRIT % TRYTE_TRIT) * TRIT_BIT / CHAR_BIT);
+}
+
+void set_tryte(void *address, __tryte(t)) {
     uint8_t offset = 0xff >> ((uint64_t)address * BYTE_TRIT / TRYTE_TRIT % BYTE_TRIT * TRIT_BIT);
     ((__tryte_buffer_ret)address)[0] &= ~offset;
-    ((__tryte_buffer_ret)address)[0] |= value[0] & offset;
-    ((__tryte_buffer_ret)address)[1] = value[1];
+    ((__tryte_buffer_ret)address)[0] |= t[0] & offset;
+    ((__tryte_buffer_ret)address)[1] = t[1];
     offset >>= 1;
     ((__tryte_buffer_ret)address)[2] &= ~offset;
-    ((__tryte_buffer_ret)address)[2] |= value[2] & offset;
+    ((__tryte_buffer_ret)address)[2] |= t[2] & offset;
+}
+
+__tryte_buffer_ret get_tryte(void *address) {
+    static __tryte(t);
+    set_tryte(&t, tryte_at(address));
+    return t;
 }
 
 void memset(void *start, __tryte(value), uint64_t num) {

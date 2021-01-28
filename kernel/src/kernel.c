@@ -99,6 +99,10 @@ extern void _start(BOOT_INFO *b){
     print(&r, uint64_to_string((get_reserved_RAM() * 100 / METRI) - (get_reserved_RAM() / METRI * 100)));
     print(&r, " MT\n");
 
+    __tryte(t) = {0b10010010, 0b10001001, 0b00000000};
+    set_tryte(next_tryte_at(bootInfo->map + bootInfo->mapDescriptorSize), t);
+    print(&r, uint64_to_string(*next_tryte_at(bootInfo->map + bootInfo->mapDescriptorSize)));
+    
     /*
     print(&r, "\n==================== TRITMAP TESTS ====================\n");
     __tryte_buffer(b, 2) = { 0 };

@@ -21,4 +21,4 @@ typedef struct {
 	uint64_t mapDescriptorSize;
 } BOOT_INFO;
 
-extern BOOT_INFO *bootInfo;
+BOOT_INFO *bootInfo;
