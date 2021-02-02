@@ -65,17 +65,14 @@ typedef enum {
 // Tryte macro declaration
 #define __tryte(name) uint8_t name[TRYTE_BYTE]
 
-// Tryte pointer macro declaration
-#define __tryte_ptr(name) uint8_t *(name)[TRYTE_BYTE]
-
 // Tryte buffer macro declaration
 #define __tryte_buffer(name, count) uint8_t name[CEIL(count * TRYTE_TRIT, BYTE_TRIT)]
 
 // Tryte pointer without name (return type) macro declaration
-#define __tryte_buffer_ret uint8_t*
+#define __tryte_ret uint8_t*
 
 // Tryte pointer macro declaration
-#define __tryte_buffer_ptr(name) uint8_t *name
+#define __tryte_ptr(name) uint8_t *name
 
 // Word macro declaration
 #define __word(name) uint8_t name[WORD_BYTE]
@@ -87,7 +84,7 @@ typedef enum {
 #define __trit_offset(i) ((BYTE_TRIT - 1 - (i) % BYTE_TRIT) * TRIT_BIT)
 
 // Convert byte to tryte
-__tryte_buffer_ret uint8_to_tryte(uint8_t n) {
+__tryte_ret uint8_to_tryte(uint8_t n) {
     static __tryte(t);
     uint8_t i = 0, l = TRYTE_TRIT - 1;
     while(n) {
@@ -99,7 +96,7 @@ __tryte_buffer_ret uint8_to_tryte(uint8_t n) {
 }
 
 // Convert 4 bytes to word
-__tryte_buffer_ret uint64_to_word(uint64_t n) {
+__tryte_ret uint64_to_word(uint64_t n) {
     static __word(t);
     uint8_t i = 0;
     while(n) {
