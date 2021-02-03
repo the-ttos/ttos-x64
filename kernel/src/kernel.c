@@ -99,32 +99,6 @@ extern void _start(BOOT_INFO *b){
     print(&r, uint64_to_string((get_reserved_RAM() * 100 / METRI) - (get_reserved_RAM() / METRI * 100)));
     print(&r, " MT\n");
 
-    // 0t210220210
-    __tryte(t) = {0b10010010, 0b10001001, 0b00000000};
-    void *address = (void*)12;
-    tryteset(address, t);
-    print(&r, uint64_to_string(tryte_at(address)[0]));
-    print(&r, "\n");
-    print(&r, uint64_to_string(tryte_at(address)[1]));
-    print(&r, "\n");
-    print(&r, uint64_to_string(tryte_at(address)[2]));
-    print(&r, "\n");
-    address = (void*)15;
-    tryteset(address, t);
-    print(&r, uint64_to_string(tryte_at(address)[0]));
-    print(&r, "\n");
-    print(&r, uint64_to_string(tryte_at(address)[1]));
-    print(&r, "\n");
-    print(&r, uint64_to_string(tryte_at(address)[2]));
-    print(&r, "\n");
-    address = (void*)17;
-    tryteset(address, t);
-    print(&r, uint64_to_string(tryte_at(address)[0])); // Should be 137
-    print(&r, "\n");
-    print(&r, uint64_to_string(tryte_at(address)[1]));
-    print(&r, "\n");
-    print(&r, uint64_to_string(tryte_at(address)[2]));
-    print(&r, "\n");
     /*
     print(&r, "\n==================== TRITMAP TESTS ====================\n");
     __tryte_buffer(b, 2) = { 0 };

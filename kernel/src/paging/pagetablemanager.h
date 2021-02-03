@@ -26,9 +26,44 @@ void init_page_table_manager(PAGE_TABLE *address) {
 
 void map_memory(void *virtualMemory, void *physicalMemory) {
     PAGE_MAP_INDEXER indexer = new_page_map_indexer((uint64_t)virtualMemory);
-    PAGE_DIRECTORY_ENTRY entry;
+    PAGE_DIRECTORY_ENTRY pde;
 
-    entry = pml4->entries[indexer.PDP_i];
-    PAGE_TABLE *PDP;
-    if(!entry.present) PDP = (PAGE_TABLE*)request_page();
+    pde = pml4->entries[indexer.PDP_i];
+    PAGE_TABLE *pdp;
+    if(!pde.present) {
+        pdp = (PAGE_TABLE*)request_page();
+        memset(pdp, 0, PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT);
+        pde.address = (uint64_t)pdp >> 12;
+        pde.present = true;
+        pde.readwrite = true;
+        pml4->entries[indexer.PDP_i] = pde;
+    } else {
+        pdp = (PAGE_TABLE*)((uint64_t)pde.address << 12);
+    }
+
+    pde = pdp->entries[indexer.PD_i];
+    PAGE_TABLE *pd;
+    if(!pde.present) {
+        pd = (PAGE_TABLE*)request_page();
+        memset(pd, 0, PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT);
+        pde.address = (uint64_t)pd >> 12;
+        pde.present = true;
+        pde.readwrite = true;
+        pdp->entries[indexer.PD_i] = pde;
+    } else {
+        pd = (PAGE_TABLE*)((uint64_t)pde.address << 12);
+    }
+
+    pde = pd->entries[indexer.PT_i];
+    PAGE_TABLE *pt;
+    if(!pde.present) {
+        pt = (PAGE_TABLE*)request_page();
+        memset(pt, 0, PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT);
+        pde.address = (uint64_t)pt >> 12;
+        pde.present = true;
+        pde.readwrite = true;
+        pd->entries[indexer.PT_i] = pde;
+    } else {
+        pt = (PAGE_TABLE*)((uint64_t)pde.address << 12);
+    }
 }
