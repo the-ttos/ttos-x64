@@ -38,6 +38,11 @@
 #include "paging/pageframeallocator.h"
 #endif
 
+#ifndef PAGETABLEMANAGER_H
+#define PAGETABLEMANAGER_H
+#include "paging/pagetablemanager.h"
+#endif
+
 #ifndef PAGING_H
 #define PAGING_H
 #include "paging/paging.h"
@@ -73,15 +78,21 @@ extern void _start(BOOT_INFO *b){
 
     lock_pages(&_kernelStart, kernelPages);
 
-    PAGE_MAP_INDEXER pMap = new_page_map_indexer(0x1000 * 52 + 0x50000 * 7);
-    print(&r, uint64_to_string(pMap.P_i));
-    print(&r, "\n");
-    print(&r, uint64_to_string(pMap.PT_i));
-    print(&r, "\n");
-    print(&r, uint64_to_string(pMap.PD_i));
-    print(&r, "\n");
-    print(&r, uint64_to_string(pMap.PDP_i));
-    print(&r, "\n");
+    PAGE_TABLE *pml4 = (PAGE_TABLE*)request_page();
+    memset(pml4, 0, PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT);
+    PAGE_TABLE_MANAGER *pageTableManager;
+    init_page_table_manager(pageTableManager, pml4);
+
+    for(uint64_t t = 0; t < get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize); t += PAGE_BYTE)
+        map_memory(pageTableManager, (void*)t, (void*)t);
+
+    uint64_t fbBase = (uint64_t)bootInfo->framebuffer->address;
+    uint64_t fbSize = (uint64_t)bootInfo->framebuffer->size + 4096;
+
+    for(uint64_t t = fbBase; t < fbBase + fbSize; t += 4096)
+        map_memory(pageTableManager, (void*)t, (void*)t);
+
+    asm("mov %0, %%cr3" : : "r" (pml4));
 
     print(&r, "Free RAM: ");
     print(&r, uint64_to_string(get_free_RAM() / METRI));

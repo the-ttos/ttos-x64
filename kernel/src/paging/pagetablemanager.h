@@ -18,17 +18,19 @@
 #include "pageframeallocator.h"
 #endif
 
-PAGE_TABLE *pml4;
+typedef struct {
+    PAGE_TABLE *pml4;
+} PAGE_TABLE_MANAGER;
 
-void init_page_table_manager(PAGE_TABLE *address) {
-    pml4 = address;
+void init_page_table_manager(PAGE_TABLE_MANAGER *manager, PAGE_TABLE *address) {
+    manager->pml4 = address;
 }
 
-void map_memory(void *virtualMemory, void *physicalMemory) {
+void map_memory(PAGE_TABLE_MANAGER *manager, void *virtualMemory, void *physicalMemory) {
     PAGE_MAP_INDEXER indexer = new_page_map_indexer((uint64_t)virtualMemory);
     PAGE_DIRECTORY_ENTRY pde;
 
-    pde = pml4->entries[indexer.PDP_i];
+    pde = manager->pml4->entries[indexer.PDP_i];
     PAGE_TABLE *pdp;
     if(!pde.present) {
         pdp = (PAGE_TABLE*)request_page();
@@ -36,7 +38,7 @@ void map_memory(void *virtualMemory, void *physicalMemory) {
         pde.address = (uint64_t)pdp >> 12;
         pde.present = true;
         pde.readwrite = true;
-        pml4->entries[indexer.PDP_i] = pde;
+        manager->pml4->entries[indexer.PDP_i] = pde;
     } else {
         pdp = (PAGE_TABLE*)((uint64_t)pde.address << 12);
     }
@@ -66,4 +68,10 @@ void map_memory(void *virtualMemory, void *physicalMemory) {
     } else {
         pt = (PAGE_TABLE*)((uint64_t)pde.address << 12);
     }
+
+    pde = pt->entries[indexer.P_i];
+    pde.address = (uint64_t)physicalMemory >> 12;
+    pde.present = true;
+    pde.readwrite = true;
+    pt->entries[indexer.P_i] = pde;
 }

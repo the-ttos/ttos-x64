@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "typeinfo": "cpp",
-        "cstdint": "cpp"
+        "cstdint": "cpp",
+        "pageframeallocator.h": "c"
     }
 }
