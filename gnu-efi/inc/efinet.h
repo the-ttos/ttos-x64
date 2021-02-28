@@ -265,7 +265,7 @@ typedef
 EFI_STATUS
 (EFIAPI *EFI_SIMPLE_NETWORK_NVDATA) (
     IN struct _EFI_SIMPLE_NETWORK_PROTOCOL  *This,
-    IN BOOLEAN                              ReadWrite,
+    IN BOOLEAN                              readWrite,
     IN UINTN                                Offset,
     IN UINTN                                BufferSize,
     IN OUT VOID                             *Buffer

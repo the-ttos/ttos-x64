@@ -10,15 +10,13 @@ typedef struct {
     uint64_t P_i;
 } PAGE_MAP_INDEXER;
 
-PAGE_MAP_INDEXER new_page_map_indexer(uint64_t virtualAddress) {
-    PAGE_MAP_INDEXER indexer;   
+void init_page_map_indexer(PAGE_MAP_INDEXER *indexer, uint64_t virtualAddress) {
     virtualAddress >>= 12;
-    indexer.P_i = virtualAddress & 0x1ff;
+    indexer->P_i = virtualAddress & 0x1ff;
     virtualAddress >>= 9;
-    indexer.PT_i = virtualAddress & 0x1ff;
+    indexer->PT_i = virtualAddress & 0x1ff;
     virtualAddress >>= 9;
-    indexer.PD_i = virtualAddress & 0x1ff;
+    indexer->PD_i = virtualAddress & 0x1ff;
     virtualAddress >>= 9;
-    indexer.PDP_i = virtualAddress & 0x1ff;
-    return indexer;
+    indexer->PDP_i = virtualAddress & 0x1ff;
 }

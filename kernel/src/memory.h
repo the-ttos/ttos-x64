@@ -29,6 +29,17 @@ uint64_t get_memory_size(EFI_MEMORY_DESCRIPTOR *map, uint64_t mapEntries, uint64
     return memorySize;
 }
 
+uint64_t BINARY_get_memory_size(EFI_MEMORY_DESCRIPTOR *map, uint64_t mapEntries, uint64_t mapDescriptorSize) {
+    static uint64_t memorySize = 0;
+    if(memorySize) return memorySize;
+    
+    for(uint64_t i = 0; i < mapEntries; i++) {
+        EFI_MEMORY_DESCRIPTOR *descriptor = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)map + (i * mapDescriptorSize));
+        memorySize += descriptor->pageCount * PAGE_BYTE;
+    }
+    return memorySize;
+}
+
 // Tryte at current specified byte
 __tryte_ret tryte_c(void *t) {
     return (__tryte_ret)((uint64_t)t * BYTE_TRIT / TRYTE_TRIT * TRYTE_TRIT / BYTE_TRIT);
@@ -50,7 +61,7 @@ __tryte_ret tryte_l(void *t) {
 
 // Set a tryte in memory to a value
 void tryteset(void *address, __tryte(t)) {
-    uint8_t byte = tryte_l(address);
+    uint64_t byte = (uint64_t)tryte_l(address);
     uint8_t offset = byte % TRYTE_TRIT;
     uint8_t mask = 0xff >> offset;
     ((__tryte_ret)address)[0] &= ~mask;
@@ -92,4 +103,9 @@ void memset(void *address, __tryte(value), uint64_t num) {
     for(; (uint64_t)address < num; address += TRIT_BIT
         + ((uint64_t)address % TRYTE_TRIT == TRYTE_TRIT - TRYTE_BYTE))
         tryteset(address, value);
+}
+
+void BINARY_memset(void *start, uint8_t value, uint64_t num) {
+    for(uint64_t i = 0; i < num; i++)
+        *(uint8_t*)((uint64_t)start + i) = value;
 }

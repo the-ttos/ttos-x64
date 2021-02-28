@@ -2,6 +2,8 @@
     "files.associations": {
         "typeinfo": "cpp",
         "cstdint": "cpp",
-        "pageframeallocator.h": "c"
+        "pageframeallocator.h": "c",
+        "boot.h": "c",
+        "framebuffer.h": "c"
     }
 }

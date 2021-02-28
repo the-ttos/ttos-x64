@@ -3,11 +3,6 @@
 #include <stdint.h>
 #endif
 
-#ifndef STDDEF_H
-#define STDDEF_H
-#include <stddef.h>
-#endif
-
 #ifndef STDBOOL_H
 #define STDBOOL_H
 #include <stdbool.h>

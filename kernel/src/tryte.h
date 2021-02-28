@@ -57,7 +57,7 @@ typedef enum {
 #define TETRI 22876792454961
 
 // Page size in bytes = 4096
-#define PAGE_BYTE 4096
+#define PAGE_BYTE 0x1000
 
 // Page size in trytes = 1820
 #define PAGE_TRYTE PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT

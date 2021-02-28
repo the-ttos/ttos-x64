@@ -10,7 +10,7 @@
 
 typedef struct {
     bool present: 1;
-    bool readwrite: 1;
+    bool readWrite: 1;
     bool userSuper: 1;
     bool writeThrough: 1;
     bool cahceDisabled: 1;
@@ -22,6 +22,10 @@ typedef struct {
     uint64_t address: 52;
 } PAGE_DIRECTORY_ENTRY;
 
-typedef struct {
+// typedef struct {
+//     PAGE_DIRECTORY_ENTRY entries[512];
+// } __attribute__ ((aligned (PAGE_BYTE))) PAGE_TABLE;
+
+typedef struct __attribute__ ((aligned (PAGE_BYTE))) {
     PAGE_DIRECTORY_ENTRY entries[512];
-} __attribute__ ((aligned (0x1000))) PAGE_TABLE;
+} PAGE_TABLE;
