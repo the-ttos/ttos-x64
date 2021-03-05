@@ -13,7 +13,7 @@ typedef struct {
     bool readWrite: 1;
     bool userSuper: 1;
     bool writeThrough: 1;
-    bool cahceDisabled: 1;
+    bool cacheDisabled: 1;
     bool accessed: 1;
     bool ignore0: 1;
     bool largerPages: 1;

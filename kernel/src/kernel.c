@@ -65,43 +65,43 @@ extern void _start(BOOT_INFO *b){
     bootInfo = b;
     RENDERER r = {bootInfo->framebuffer, ANCHOR, bootInfo->font, 0xfffbc531};
 
-    // for(uint16_t i = 0; i < bootInfo->framebuffer->width * 4; i++)
-    //     for(uint16_t j = 0; j < bootInfo->framebuffer->height; j++)
-    //         *(uint8_t*)(i + (j * bootInfo->framebuffer->pixelsPerScanline * 4) + bootInfo->framebuffer->address) = 0x00000000;
-    
+    for(uint16_t i = 0; i < bootInfo->framebuffer->width * 4; i++)
+        for(uint16_t j = 0; j < bootInfo->framebuffer->height; j++)
+            *(uint8_t*)(i + (j * bootInfo->framebuffer->pixelsPerScanline * 4) + bootInfo->framebuffer->address) = 0x00000000;
+
     uint64_t mapEntries = bootInfo->mapSize / bootInfo->mapDescriptorSize;
 
-    BINARY_read_efi_memory_map(bootInfo->map, bootInfo->mapSize, bootInfo->mapDescriptorSize);
+    read_efi_memory_map(bootInfo->map, bootInfo->mapSize, bootInfo->mapDescriptorSize);
 
     uint64_t kernelSize = (uint64_t)&_kernelEnd - (uint64_t)&_kernelStart;
-    uint64_t kernelPages = kernelSize / PAGE_BYTE + 1;
+    uint64_t kernelPages = ceil(kernelSize, PAGE_TRYTE * TRYTE_BYTE);
 
     lock_pages(&_kernelStart, kernelPages);
-
-    PAGE_TABLE *pml4 = (PAGE_TABLE*)BINARY_request_page();
-    // memset(pml4, 0, PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT);
-    BINARY_memset(pml4, 0, PAGE_BYTE);
+    
+    PAGE_TABLE *pml4 = (PAGE_TABLE*)request_page();
+    memset(pml4, tryteEMPTY, PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT);
+    // BINARY_memset(pml4, 0, PAGE_BYTE);
     PAGE_TABLE_MANAGER pageTableManager;
     init_page_table_manager(&pageTableManager, pml4);
 
-    for(uint64_t t = 0; t < BINARY_get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize); t += PAGE_BYTE)
-        map_memory(&pageTableManager, (void*)t, (void*)t);
+    // for(uint64_t t = 0; t < get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize); t += PAGE_TRYTE)
+    //     map_memory(&pageTableManager, (void*)t, (void*)t);
 
-    uint64_t fbBase = (uint64_t)bootInfo->framebuffer->address;
-    uint64_t fbSize = (uint64_t)bootInfo->framebuffer->size + PAGE_BYTE;
+    // uint64_t fbBase = (uint64_t)bootInfo->framebuffer->address;
+    // uint64_t fbSize = (uint64_t)bootInfo->framebuffer->size + PAGE_TRYTE;
 
-    for(uint64_t t = fbBase; t < fbBase + fbSize; t += PAGE_BYTE)
-        map_memory(&pageTableManager, (void*)t, (void*)t);
+    // for(uint64_t t = fbBase; t < fbBase + fbSize; t += PAGE_TRYTE)
+    //     map_memory(&pageTableManager, (void*)t, (void*)t);
 
-    asm("mov %0, %%cr3" : : "r" (pml4));
-    print(&r, "Hello\n");
+    // asm("mov %0, %%cr3" : : "r" (pml4));
+    // print(&r, "Hello\n");
 
-    map_memory(&pageTableManager, (void*)0x600000000, (void*)0x80000);
+    // map_memory(&pageTableManager, (void*)0x600000000, (void*)0x80000);
 
-    uint64_t* test = (uint64_t*)0x600000000;
-    *test = 26;
+    // uint64_t* test = (uint64_t*)0x600000000;
+    // *test = 26;
 
-    print(&r, uint64_to_string(*test));
+    // print(&r, uint64_to_string(*test));
 
     // print(&r, "Free RAM: ");
     // print(&r, uint64_to_string(get_free_RAM() / 1024));
@@ -113,21 +113,21 @@ extern void _start(BOOT_INFO *b){
     // print(&r, uint64_to_string(get_reserved_RAM() / 1024));
     // print(&r, " KB\n");
 
-    // print(&r, "Free RAM: ");
-    // print(&r, uint64_to_string(get_free_RAM() / METRI));
-    // print(&r, ".");
-    // print(&r, uint64_to_string((get_free_RAM() * 100 / METRI) - (get_free_RAM() / METRI) * 100));
-    // print(&r, " MT\n");
-    // print(&r, "Used RAM: ");
-    // print(&r, uint64_to_string(get_used_RAM() / KITRI));
-    // print(&r, ".");
-    // print(&r, uint64_to_string((get_used_RAM() * 100 / KITRI) - (get_used_RAM() / KITRI * 100)));
-    // print(&r, " KT\n");
-    // print(&r, "Reserved RAM: ");
-    // print(&r, uint64_to_string(get_reserved_RAM() / METRI));
-    // print(&r, ".");
-    // print(&r, uint64_to_string((get_reserved_RAM() * 100 / METRI) - (get_reserved_RAM() / METRI * 100)));
-    // print(&r, " MT\n");
+    print(&r, "Free RAM: ");
+    print(&r, uint64_to_string(get_free_RAM() / METRI));
+    print(&r, ".");
+    print(&r, uint64_to_string((get_free_RAM() * 100 / METRI) - (get_free_RAM() / METRI) * 100));
+    print(&r, " MT\n");
+    print(&r, "Used RAM: ");
+    print(&r, uint64_to_string(get_used_RAM() / KITRI));
+    print(&r, ".");
+    print(&r, uint64_to_string((get_used_RAM() * 100 / KITRI) - (get_used_RAM() / KITRI * 100)));
+    print(&r, " KT\n");
+    print(&r, "Reserved RAM: ");
+    print(&r, uint64_to_string(get_reserved_RAM() / METRI));
+    print(&r, ".");
+    print(&r, uint64_to_string((get_reserved_RAM() * 100 / METRI) - (get_reserved_RAM() / METRI * 100)));
+    print(&r, " MT\n");
 
     /*
     print(&r, "\n==================== BITMAP TESTS ====================\n");

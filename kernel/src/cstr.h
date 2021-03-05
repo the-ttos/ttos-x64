@@ -53,7 +53,6 @@ const char *word_to_string(__word(t)) {
     return uint64_to_string(result);
 }
 
-
 // Tryte (3 bytes) integer to ternary string
 const char *tryte_to_tstring(__tryte(t)) {
     static char tryteBuffer[2 + TRYTE_TRIT + 1];

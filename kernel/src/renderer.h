@@ -39,15 +39,16 @@ void print(RENDERER *r, const char *str) {
             case '\n':
                 r->cursor.y += 16;
                 r->cursor.x = ANCHOR.x;
-                goto next;
+                break;
+            default:
+                put_char(r, *str, r->cursor.x, r->cursor.y);
+                r->cursor.x += 8;
+                if(r->cursor.x + 8 > r->target->width) {
+                    r->cursor.y += 16;
+                    r->cursor.x = ANCHOR.x;
+                }
+                break;
         }
-        put_char(r, *str, r->cursor.x, r->cursor.y);
-        r->cursor.x += 8;
-        if(r->cursor.x + 8 > r->target->width) {
-            r->cursor.y += 16;
-            r->cursor.x = ANCHOR.x;
-        }
-        next:
         str++;
     }
 }

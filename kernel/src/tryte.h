@@ -33,13 +33,13 @@ typedef enum {
 #define BYTE_TRIT (CHAR_BIT / TRIT_BIT)
 
 // 1 tryte = 3 bytes
-#define TRYTE_BYTE CEIL(TRYTE_TRIT, BYTE_TRIT)
+#define TRYTE_BYTE (CEIL(TRYTE_TRIT, BYTE_TRIT))
 
 // 1 word = 3 trytes
-#define TRYTE_WORD CEIL(WORD_TRIT, TRYTE_TRIT)
+#define TRYTE_WORD (CEIL(WORD_TRIT, TRYTE_TRIT))
 
 // 1 word = 9 bytes
-#define WORD_BYTE CEIL(WORD_TRIT, BYTE_TRIT)
+#define WORD_BYTE (CEIL(WORD_TRIT, BYTE_TRIT))
 
 // 1 heptavintimal character = 3 trits
 #define HEPTA_TRIT (27 / TRYTE_TRIT)
@@ -60,7 +60,7 @@ typedef enum {
 #define PAGE_BYTE 0x1000
 
 // Page size in trytes = 1820
-#define PAGE_TRYTE PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT
+#define PAGE_TRYTE (PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT)
 
 // Tryte macro declaration
 #define __tryte(name) uint8_t name[TRYTE_BYTE]
@@ -82,6 +82,12 @@ typedef enum {
 
 // Offset of 0b11 inside a byte
 #define __trit_offset(i) ((BYTE_TRIT - 1 - (i) % BYTE_TRIT) * TRIT_BIT)
+
+// A 0 valued tryte
+__tryte(tryteEMPTY) = {0b00000000, 0b00000000, 0b00000000};
+
+// A 19683 valued tryte
+__tryte(tryteFULL) = {0b11111111, 0b11111111, 0b11000000};
 
 // Convert byte to tryte
 __tryte_ret uint8_to_tryte(uint8_t n) {

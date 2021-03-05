@@ -41,7 +41,7 @@ void map_memory(PAGE_TABLE_MANAGER *manager, void *virtualMemory, void *physical
     if(!pde.present) {
         pdp = (PAGE_TABLE*)BINARY_request_page();
         BINARY_memset(pdp, 0, PAGE_BYTE);
-        //memset(pdp, 0, PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT);
+        // memset(pdp, 0, PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT);
         pde.address = (uint64_t)pdp >> 12;
         pde.present = true;
         pde.readWrite = true;
@@ -53,6 +53,7 @@ void map_memory(PAGE_TABLE_MANAGER *manager, void *virtualMemory, void *physical
     if(!pde.present) {
         pd = (PAGE_TABLE*)BINARY_request_page();
         BINARY_memset(pd, 0, PAGE_BYTE);
+        // memset(pdp, 0, PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT);
         pde.address = (uint64_t)pd >> 12;
         pde.present = true;
         pde.readWrite = true;
@@ -65,6 +66,7 @@ void map_memory(PAGE_TABLE_MANAGER *manager, void *virtualMemory, void *physical
     if(!pde.present) {
         pt = (PAGE_TABLE*)BINARY_request_page();
         BINARY_memset(pt, 0, PAGE_BYTE);
+        // memset(pdp, 0, PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT);
         pde.address = (uint64_t)pt >> 12;
         pde.present = true;
         pde.readWrite = true;
