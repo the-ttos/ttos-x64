@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "pageframeallocator.h": "c",
+        "tritmap.h": "c",
+        "memory.h": "c"
+    }
+}

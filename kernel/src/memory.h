@@ -40,28 +40,16 @@ uint64_t BINARY_get_memory_size(EFI_MEMORY_DESCRIPTOR *map, uint64_t mapEntries,
     return memorySize;
 }
 
-// Tryte at current specified byte
-__tryte_ret tryte_c(void *t) {
-    return (__tryte_ret)((uint64_t)t * BYTE_TRIT / TRYTE_TRIT * TRYTE_TRIT / BYTE_TRIT);
-}
-
-// Byte of next available tryte at specified byte
-__tryte_ret tryte_n(void *t) {
-    return (__tryte_ret)((uint64_t)t
-        + ((uint64_t)t % TRIT_BIT != ((uint64_t)t + 1) / TRYTE_TRIT % TRIT_BIT)
-        + ((uint64_t)t % TRYTE_TRIT == TRYTE_TRIT - TRIT_BIT));
-}
-
 // Byte of last tryte of specified byte
-__tryte_ret tryte_l(void *t) {
+__tryte_ret tryte_a(void *t) {
     return (__tryte_ret)((uint64_t)t
-        - ((uint64_t)t % TRIT_BIT != (uint64_t)t / TRYTE_TRIT % TRIT_BIT)
-        - ((uint64_t)t % TRYTE_TRIT == TRYTE_TRIT - 1));
+        + ((uint64_t)t % TRIT_BIT != (uint64_t)t / TRYTE_TRIT % TRIT_BIT)
+        + ((uint64_t)t % TRYTE_TRIT >= TRYTE_TRIT - TRIT_BIT));
 }
 
 // Set a tryte in memory to a value
 void tryteset(void *address, __tryte(t)) {
-    uint64_t byte = (uint64_t)tryte_l(address);
+    uint64_t byte = (uint64_t)tryte_a(address);
     uint8_t offset = byte % TRYTE_TRIT;
     uint8_t mask = 0xff >> offset;
     ((__tryte_ret)address)[0] &= ~mask;
@@ -69,7 +57,7 @@ void tryteset(void *address, __tryte(t)) {
     ((__tryte_ret)address)[1] = 0;
     ((__tryte_ret)address)[1] |= t[0] << CHAR_BIT - offset;
     ((__tryte_ret)address)[1] |= t[1] >> offset;
-    mask >>= 2;
+    mask >>= TRIT_BIT;
     ((__tryte_ret)address)[2] &= mask;
     ((__tryte_ret)address)[2] |= t[1] << CHAR_BIT - offset;
     ((__tryte_ret)address)[2] |= (t[2] & 0b11000000) >> offset; // 0b11000000 = Last byte mask for normal tryte
@@ -77,8 +65,8 @@ void tryteset(void *address, __tryte(t)) {
 
 // Copy the value of a tryte in memory to another tryte in memory
 void trytecpy(void *from, void *to) {
-    from = tryte_c(from);
-    to = tryte_c(to);
+    from = tryte_a(from);
+    to = tryte_a(to);
     uint8_t offsetFrom = (uint64_t)from * BYTE_TRIT / TRYTE_TRIT % BYTE_TRIT * TRIT_BIT;
     uint8_t offsetTo = (uint64_t)to * BYTE_TRIT / TRYTE_TRIT % BYTE_TRIT * TRIT_BIT;
     uint8_t maskTo = 0xff >> offsetTo;
@@ -97,15 +85,30 @@ void trytecpy(void *from, void *to) {
     ((__tryte_ret)to)[2] |= (((__tryte_ret)from)[2] & ~maskFrom) << offsetFrom - offsetTo;
 }
 
-void memset(void *address, __tryte(value), uint64_t num) {
-    address = tryte_l((__tryte_ret)address);
-    num *= TRYTE_TRIT * TRIT_BIT / CHAR_BIT;
-    for(; (uint64_t)address < num; address += TRIT_BIT
-        + ((uint64_t)address % TRYTE_TRIT == TRYTE_TRIT - TRYTE_BYTE))
-        tryteset(address, value);
+// Print trits in provided address
+const char *memview(__tryte_ptr(address), uint8_t num) {
+    static char bitBuffer[256 * 9 + 1]; // TEMP LENGTH
+    uint32_t p = 0;
+    for(uint8_t i = 0; i < num; i++) {
+        uint64_t byte = ((uint64_t)address + i);
+        bitBuffer[p++] = ':';
+        bitBuffer[p++] = ' ';
+        for(uint8_t j = 0; j < CHAR_BIT; j++) {
+            if(byte % TRIT_BIT == byte / TRYTE_TRIT % TRIT_BIT - (byte % TRYTE_TRIT == TRYTE_TRIT - 1)
+                && j == byte % TRYTE_TRIT) {
+                bitBuffer[p++] = '|';
+                bitBuffer[p++] = ' ';
+            }
+            bitBuffer[p++] = (*(uint8_t*)byte & (1 << (CHAR_BIT - 1 - j))) ? '1' : '0';
+            if(j % 2) bitBuffer[p++] = ' ';
+        }
+    }
+    bitBuffer[p] = '\0';
+    return bitBuffer;
 }
 
-void BINARY_memset(void *start, uint8_t value, uint64_t num) {
-    for(uint64_t i = 0; i < num; i++)
-        *(uint8_t*)((uint64_t)start + i) = value;
+// Set trytes in memory
+void memset(__tryte_ptr(address), __tryte(value), uint64_t num) {
+    address = tryte_a((__tryte_ret)address);
+    for(uint64_t i = 0; i < num; i++) tryteset(address + i * 2, value);
 }

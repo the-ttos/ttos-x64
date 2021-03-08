@@ -8,6 +8,12 @@
 #include "tryte.h"
 #endif
 
+#ifndef MEMORY_H
+#define MEMORY_H
+#include "memory.h"
+#endif
+
+
 // Unsigned 8 bytes integer to string conversion
 const char *uint64_to_string(uint64_t value) {
     static char uintBuffer[128];
@@ -69,27 +75,27 @@ const char *tryte_to_tstring(__tryte(t)) {
 
 // Word (9 bytes) integer to ternary string
 const char *word_to_tstring(__word(t)) {
-    static char tryteBuffer[2 + WORD_TRIT + 1];
-    tryteBuffer[0] = '0';
-    tryteBuffer[1] = 't';
+    static char wordBuffer[2 + WORD_TRIT + 1];
+    wordBuffer[0] = '0';
+    wordBuffer[1] = 't';
     for(uint8_t i = 0; i < WORD_TRIT; i++) {
-        tryteBuffer[2 + i] = '0' + ((t[__byte_of_trit(i)]
+        wordBuffer[2 + i] = '0' + ((t[__byte_of_trit(i)]
         & (0b11 << (BYTE_TRIT - 1 - i % BYTE_TRIT) * TRIT_BIT))
         >> (BYTE_TRIT - 1 - i % BYTE_TRIT) * TRIT_BIT);
     }
-    tryteBuffer[2 + WORD_TRIT] = '\0';
-    return tryteBuffer;
+    wordBuffer[2 + WORD_TRIT] = '\0';
+    return wordBuffer;
 }
 
 // Tryte (3 bytes) integer to heptavintimal string
 const char *tryte_to_hstring(__tryte(t)) {
-    static char heptaBuffer[2 + HEPTA_TRIT + 1];
-    heptaBuffer[0] = '0';
-    heptaBuffer[1] = 'h';
+    static char tryteHeptaBuffer[2 + HEPTA_TRIT + 1];
+    tryteHeptaBuffer[0] = '0';
+    tryteHeptaBuffer[1] = 'h';
     for(uint8_t i = 0; i < TRYTE_TRIT; i += 3) {
         const uint8_t index = 2 + i / HEPTA_TRIT;
         // 0tX00 +
-        heptaBuffer[index] = ((t[__byte_of_trit(i + 0)] & 0b11
+        tryteHeptaBuffer[index] = ((t[__byte_of_trit(i + 0)] & 0b11
             << (BYTE_TRIT - 1 - (i + 0) % BYTE_TRIT) * TRIT_BIT)
             >> (BYTE_TRIT - 1 - (i + 0) % BYTE_TRIT) * TRIT_BIT) * 9 // 3 to the power of 2
         // 0t0X0 +
@@ -100,21 +106,21 @@ const char *tryte_to_hstring(__tryte(t)) {
                             + ((t[__byte_of_trit(i + 2)] & 0b11
             << (BYTE_TRIT - 1 - (i + 2) % BYTE_TRIT) * TRIT_BIT)
             >> (BYTE_TRIT - 1 - (i + 2) % BYTE_TRIT) * TRIT_BIT) * 1; // 3 to the power of 0
-        heptaBuffer[index] += '0' + (heptaBuffer[index] >= 10) * ('A' - '9' - 1);
+        tryteHeptaBuffer[index] += '0' + (tryteHeptaBuffer[index] >= 10) * ('A' - '9' - 1);
     }
-    heptaBuffer[2 + HEPTA_TRIT] = '\0';
-    return heptaBuffer;
+    tryteHeptaBuffer[2 + HEPTA_TRIT] = '\0';
+    return tryteHeptaBuffer;
 }
 
 // Word (9 bytes) integer to heptavintimal string
 const char *word_to_hstring(__tryte(t)) {
-    static char heptaBuffer[2 + HEPTA_TRIT * TRYTE_WORD + 1];
-    heptaBuffer[0] = '0';
-    heptaBuffer[1] = 'h';
+    static char wordHeptaBuffer[2 + HEPTA_TRIT * TRYTE_WORD + 1];
+    wordHeptaBuffer[0] = '0';
+    wordHeptaBuffer[1] = 'h';
     for(uint8_t i = 0; i < WORD_TRIT; i += 3) {
         const uint8_t index = 2 + i / HEPTA_TRIT;
         // 0tX00 +
-        heptaBuffer[index] = ((t[__byte_of_trit(i + 0)] & 0b11
+        wordHeptaBuffer[index] = ((t[__byte_of_trit(i + 0)] & 0b11
             << (BYTE_TRIT - 1 - (i + 0) % BYTE_TRIT) * TRIT_BIT)
             >> (BYTE_TRIT - 1 - (i + 0) % BYTE_TRIT) * TRIT_BIT) * 9 // 3 to the power of 2
         // 0t0X0 +
@@ -125,10 +131,10 @@ const char *word_to_hstring(__tryte(t)) {
                             + ((t[__byte_of_trit(i + 2)] & 0b11
             << (BYTE_TRIT - 1 - (i + 2) % BYTE_TRIT) * TRIT_BIT)
             >> (BYTE_TRIT - 1 - (i + 2) % BYTE_TRIT) * TRIT_BIT) * 1; // 3 to the power of 0
-        heptaBuffer[index] += '0' + (heptaBuffer[index] >= 10) * ('A' - '9' - 1);
+        wordHeptaBuffer[index] += '0' + (wordHeptaBuffer[index] >= 10) * ('A' - '9' - 1);
     }
-    heptaBuffer[2 + HEPTA_TRIT * TRYTE_WORD] = '\0';
-    return heptaBuffer;
+    wordHeptaBuffer[2 + HEPTA_TRIT * TRYTE_WORD] = '\0';
+    return wordHeptaBuffer;
 }
 
 // Trit (2 bits) to balanced trit string

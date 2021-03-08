@@ -60,7 +60,7 @@ typedef enum {
 #define PAGE_BYTE 0x1000
 
 // Page size in trytes = 1820
-#define PAGE_TRYTE (PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT)
+#define PAGE_TRYTE PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT
 
 // Tryte macro declaration
 #define __tryte(name) uint8_t name[TRYTE_BYTE]
@@ -87,7 +87,7 @@ typedef enum {
 __tryte(tryteEMPTY) = {0b00000000, 0b00000000, 0b00000000};
 
 // A 19683 valued tryte
-__tryte(tryteFULL) = {0b11111111, 0b11111111, 0b11000000};
+__tryte(tryteFULL) = {0b10101010, 0b10101010, 0b10000000};
 
 // Convert byte to tryte
 __tryte_ret uint8_to_tryte(uint8_t n) {
@@ -460,7 +460,7 @@ unsigned char *__clu(const __tryte(t)) {
 // 00 | 0  0  X  0
 // 01 | 0  1  X  1
 // 11 | X  X  X  X
-// 10 | 0  1  x  2
+// 10 | 0  1  X  2
 //
 // This implementation uses the following equation:
 // x' = x & z; y' = ((x ^ y) & (z ^ w) & ~(x & z))
@@ -508,7 +508,7 @@ unsigned char *__or(const __tryte(t), const __tryte(u)) {
 // 00 | 2  2  X  2
 // 01 | 2  1  X  1
 // 11 | X  X  X  X
-// 10 | 2  1  x  0
+// 10 | 2  1  X  0
 //
 // This implementation uses the following equation:
 // x' = ~y' & ~(x & z); y' = y & (z | w) | x & w
@@ -534,7 +534,7 @@ unsigned char *__nand(const __tryte(t), const __tryte(u)) {
 // 00 | 2  1  X  0
 // 01 | 1  1  X  0
 // 11 | X  X  X  X
-// 10 | 0  0  x  0
+// 10 | 0  0  X  0
 //
 // This implementation uses the following equation:
 // x' = ~(x | y | z | w); y' = ~(x ^ z) & (y | w)
@@ -559,7 +559,7 @@ unsigned char *__nor(const __tryte(t), const __tryte(u)) {
 // 00 | 0  1  X  2
 // 01 | 1  1  X  1
 // 11 | X  X  X  X
-// 10 | 2  1  x  0
+// 10 | 2  1  X  0
 //
 // This implementation uses the following equation:
 // x' = x & (~z ^ w) | z & (~x ^ y); y' = w | y
@@ -584,7 +584,7 @@ unsigned char *__xor(const __tryte(t), const __tryte(u)) {
 // 00 | 2  0  X  1
 // 01 | 0  1  X  2
 // 11 | X  X  X  X
-// 10 | 1  2  x  0
+// 10 | 1  2  X  0
 //
 // This implementation uses the following equation:
 // x' = (~y ^ z) & (~x ^ w); y' = (~y ^ w) & (x ^ z)
