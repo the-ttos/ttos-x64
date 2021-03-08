@@ -79,7 +79,7 @@ extern void _start(BOOT_INFO *b){
     lock_pages(&_kernelStart, kernelPages);
     
     PAGE_TABLE *pml4 = (PAGE_TABLE*)request_page();
-    memset(pml4, tryteEMPTY, );
+    memset(pml4, tryteEMPTY, PAGE_TRYTE);
     PAGE_TABLE_MANAGER pageTableManager;
     init_page_table_manager(&pageTableManager, pml4);
 
