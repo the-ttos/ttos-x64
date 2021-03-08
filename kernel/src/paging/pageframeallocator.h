@@ -153,8 +153,9 @@ void reserve_pages(void *address, uint64_t pageCount) {
 }
 
 // Request an unused page and lock it
-void *request_page() {
+void *request_page(RENDERER *R) {
     for(uint64_t i = 0; i < pageTritmap.size * TRYTE_TRIT; i++) {
+        print(R, "asd");
         if(read_trit(pageTritmap.buffer, i) != tFALSE) continue;
         lock_page((void*)(i * PAGE_BYTE));
         return (void*)(i * PAGE_BYTE);

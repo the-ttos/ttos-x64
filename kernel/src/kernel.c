@@ -78,13 +78,13 @@ extern void _start(BOOT_INFO *b){
 
     lock_pages(&_kernelStart, kernelPages);
     
-    PAGE_TABLE *pml4 = (PAGE_TABLE*)request_page();
-    memset(pml4, tryteEMPTY, PAGE_TRYTE);
+    PAGE_TABLE *pml4 = (PAGE_TABLE*)request_page(&r);
+    memset((uint8_t*)pml4, tryteEMPTY, PAGE_TRYTE);
     PAGE_TABLE_MANAGER pageTableManager;
     init_page_table_manager(&pageTableManager, pml4);
 
-    // for(uint64_t t = 0; t < get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize); t += PAGE_TRYTE)
-    //     map_memory(&pageTableManager, (void*)t, (void*)t);
+    for(uint64_t t = 0; t < get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize); t += PAGE_TRYTE)
+        map_memory(&r, &pageTableManager, (void*)t, (void*)t);
 
     // uint64_t fbBase = (uint64_t)bootInfo->framebuffer->address;
     // uint64_t fbSize = (uint64_t)bootInfo->framebuffer->size + PAGE_TRYTE;
@@ -127,10 +127,11 @@ extern void _start(BOOT_INFO *b){
     print(&r, ".");
     print(&r, uint64_to_string((get_reserved_RAM() * 100 / METRI) - (get_reserved_RAM() / METRI * 100)));
     print(&r, " MT\n");
+
     __tryte(u) = {0b00000001, 0b01011010, 0b10000000};
     __tryte(v) = {0b00011000, 0b01100001, 0b10000000};
     memset((uint8_t*)0x12, __nand(u, v), 1);
-    print(&r, memory_to_string((uint8_t*)0x12, 3));
+    print(&r, memview((uint8_t*)0x12, 3));
 
     /*
     print(&r, "\n==================== BITMAP TESTS ====================\n");
