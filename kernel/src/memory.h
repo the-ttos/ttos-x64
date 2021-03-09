@@ -3,6 +3,11 @@
 #include <stdint.h>
 #endif
 
+#ifndef STDBOOL_H
+#define STDBOOL_H
+#include <stdbool.h>
+#endif
+
 #ifndef EFIMEMORY_H
 #define EFIMEMORY_H
 #include "efimemory.h"
@@ -18,18 +23,8 @@
 #include "boot.h"
 #endif
 
+// Get full memory size in bytes
 uint64_t get_memory_size(EFI_MEMORY_DESCRIPTOR *map, uint64_t mapEntries, uint64_t mapDescriptorSize) {
-    static uint64_t memorySize = 0;
-    if(memorySize) return memorySize;
-    
-    for(uint64_t i = 0; i < mapEntries; i++) {
-        EFI_MEMORY_DESCRIPTOR *descriptor = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)map + (i * mapDescriptorSize));
-        memorySize += descriptor->pageCount * PAGE_TRYTE;
-    }
-    return memorySize;
-}
-
-uint64_t BINARY_get_memory_size(EFI_MEMORY_DESCRIPTOR *map, uint64_t mapEntries, uint64_t mapDescriptorSize) {
     static uint64_t memorySize = 0;
     if(memorySize) return memorySize;
     
@@ -37,6 +32,7 @@ uint64_t BINARY_get_memory_size(EFI_MEMORY_DESCRIPTOR *map, uint64_t mapEntries,
         EFI_MEMORY_DESCRIPTOR *descriptor = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)map + (i * mapDescriptorSize));
         memorySize += descriptor->pageCount * PAGE_BYTE;
     }
+
     return memorySize;
 }
 
@@ -64,7 +60,7 @@ void tryteset(void *address, __tryte(t)) {
 }
 
 // Copy the value of a tryte in memory to another tryte in memory
-void trytecpy(void *from, void *to) {
+void trytecpy(void* from, void *to) {
     from = tryte_a(from);
     to = tryte_a(to);
     uint8_t offsetFrom = (uint64_t)from * BYTE_TRIT / TRYTE_TRIT % BYTE_TRIT * TRIT_BIT;
@@ -77,8 +73,8 @@ void trytecpy(void *from, void *to) {
     ((__tryte_ret)to)[1] = 0;
     ((__tryte_ret)to)[1] |= (((__tryte_ret)from)[0] & maskFrom) << CHAR_BIT + offsetFrom - offsetTo;
     ((__tryte_ret)to)[1] |= ((__tryte_ret)from)[1] << offsetFrom - offsetTo;
-    maskTo >>= 2;
-    maskFrom >>= 2;
+    maskTo >>= TRIT_BIT;
+    maskFrom >>= TRIT_BIT;
     ((__tryte_ret)to)[1] |= (((__tryte_ret)from)[2] & ~maskFrom) >> CHAR_BIT - offsetFrom - offsetTo;
     ((__tryte_ret)to)[2] &= maskTo;
     ((__tryte_ret)to)[2] |= ((__tryte_ret)from)[1] << CHAR_BIT + offsetFrom - offsetTo;

@@ -74,7 +74,7 @@ extern void _start(BOOT_INFO *b){
     read_efi_memory_map(bootInfo->map, bootInfo->mapSize, bootInfo->mapDescriptorSize);
 
     uint64_t kernelSize = (uint64_t)&_kernelEnd - (uint64_t)&_kernelStart;
-    uint64_t kernelPages = ceil(kernelSize, PAGE_TRYTE * TRYTE_BYTE);
+    uint64_t kernelPages = ceil(kernelSize, PAGE_BYTE);
 
     lock_pages(&_kernelStart, kernelPages);
     
@@ -83,14 +83,21 @@ extern void _start(BOOT_INFO *b){
     PAGE_TABLE_MANAGER pageTableManager;
     init_page_table_manager(&pageTableManager, pml4);
 
-    for(uint64_t t = 0; t < get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize); t += PAGE_TRYTE)
+    print(&r, uint64_to_string(get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize) / PAGE_BYTE));
+
+    for(uint64_t t = 0;
+        t < get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize);
+        t += PAGE_BYTE) {
         map_memory(&r, &pageTableManager, (void*)t, (void*)t);
+    }
 
-    // uint64_t fbBase = (uint64_t)bootInfo->framebuffer->address;
-    // uint64_t fbSize = (uint64_t)bootInfo->framebuffer->size + PAGE_TRYTE;
+    uint64_t fbBase = (uint64_t)bootInfo->framebuffer->address;
+    uint64_t fbSize = (uint64_t)bootInfo->framebuffer->size + PAGE_BYTE;
 
-    // for(uint64_t t = fbBase; t < fbBase + fbSize; t += PAGE_TRYTE)
-    //     map_memory(&pageTableManager, (void*)t, (void*)t);
+    for(uint64_t t = fbBase; t < fbBase + fbSize; t += PAGE_BYTE) {
+        map_memory(&r, &pageTableManager, (void*)t, (void*)t);
+    }
+        
 
     // asm("mov %0, %%cr3" : : "r" (pml4));
     // print(&r, "Hello\n");
@@ -102,36 +109,36 @@ extern void _start(BOOT_INFO *b){
 
     // print(&r, uint64_to_string(*test));
 
-    // print(&r, "Free RAM: ");
-    // print(&r, uint64_to_string(get_free_RAM() / 1024));
-    // print(&r, " KB\n");
-    // print(&r, "Used RAM: ");
-    // print(&r, uint64_to_string(get_used_RAM() / 1024));
-    // print(&r, " KB\n");
-    // print(&r, "Reserved RAM: ");
-    // print(&r, uint64_to_string(get_reserved_RAM() / 1024));
-    // print(&r, " KB\n");
-
     print(&r, "Free RAM: ");
-    print(&r, uint64_to_string(get_free_RAM() / METRI));
-    print(&r, ".");
-    print(&r, uint64_to_string((get_free_RAM() * 100 / METRI) - (get_free_RAM() / METRI) * 100));
-    print(&r, " MT\n");
+    print(&r, uint64_to_string(get_free_RAM() / 1024));
+    print(&r, " KB\n");
     print(&r, "Used RAM: ");
-    print(&r, uint64_to_string(get_used_RAM() / KITRI));
-    print(&r, ".");
-    print(&r, uint64_to_string((get_used_RAM() * 100 / KITRI) - (get_used_RAM() / KITRI * 100)));
-    print(&r, " KT\n");
+    print(&r, uint64_to_string(get_used_RAM() / 1024));
+    print(&r, " KB\n");
     print(&r, "Reserved RAM: ");
-    print(&r, uint64_to_string(get_reserved_RAM() / METRI));
-    print(&r, ".");
-    print(&r, uint64_to_string((get_reserved_RAM() * 100 / METRI) - (get_reserved_RAM() / METRI * 100)));
-    print(&r, " MT\n");
+    print(&r, uint64_to_string(get_reserved_RAM() / 1024));
+    print(&r, " KB\n");
 
-    __tryte(u) = {0b00000001, 0b01011010, 0b10000000};
-    __tryte(v) = {0b00011000, 0b01100001, 0b10000000};
-    memset((uint8_t*)0x12, __nand(u, v), 1);
-    print(&r, memview((uint8_t*)0x12, 3));
+    // print(&r, "Free RAM: ");
+    // print(&r, uint64_to_string(get_free_RAM() / METRI));
+    // print(&r, ".");
+    // print(&r, uint64_to_string((get_free_RAM() * 100 / METRI) - (get_free_RAM() / METRI) * 100));
+    // print(&r, " MT\n");
+    // print(&r, "Used RAM: ");
+    // print(&r, uint64_to_string(get_used_RAM() / KITRI));
+    // print(&r, ".");
+    // print(&r, uint64_to_string((get_used_RAM() * 100 / KITRI) - (get_used_RAM() / KITRI * 100)));
+    // print(&r, " KT\n");
+    // print(&r, "Reserved RAM: ");
+    // print(&r, uint64_to_string(get_reserved_RAM() / METRI));
+    // print(&r, ".");
+    // print(&r, uint64_to_string((get_reserved_RAM() * 100 / METRI) - (get_reserved_RAM() / METRI * 100)));
+    // print(&r, " MT\n");
+
+    // __tryte(u) = {0b00000001, 0b01011010, 0b10000000};
+    // __tryte(v) = {0b00011000, 0b01100001, 0b10000000};
+    // memset((uint8_t*)0x12, __nand(u, v), 1);
+    // print(&r, memview((uint8_t*)0x12, 3));
 
     /*
     print(&r, "\n==================== BITMAP TESTS ====================\n");

@@ -39,7 +39,7 @@ void map_memory(RENDERER *R, PAGE_TABLE_MANAGER *manager, void *virtualMemory, v
     pde = manager->pml4->entries[indexer.PDP_i];
     PAGE_TABLE *pdp;
     if(!pde.present) {
-        pdp = (PAGE_TABLE*)request_page(NULL);
+        pdp = (PAGE_TABLE*)request_page(R);
         memset((uint8_t*)pdp, tryteEMPTY, PAGE_TRYTE);
         pde.address = (uint64_t)pdp >> 12;
         pde.present = true;
@@ -50,7 +50,7 @@ void map_memory(RENDERER *R, PAGE_TABLE_MANAGER *manager, void *virtualMemory, v
     pde = pdp->entries[indexer.PD_i];
     PAGE_TABLE *pd;
     if(!pde.present) {
-        pd = (PAGE_TABLE*)request_page(NULL);
+        pd = (PAGE_TABLE*)request_page(R);
         memset((uint8_t*)pd, tryteEMPTY, PAGE_TRYTE);
         pde.address = (uint64_t)pd >> 12;
         pde.present = true;
@@ -62,13 +62,13 @@ void map_memory(RENDERER *R, PAGE_TABLE_MANAGER *manager, void *virtualMemory, v
     PAGE_TABLE *pt;
     if(!pde.present) {
         pt = (PAGE_TABLE*)request_page(R);
-        // memset((uint8_t*)pt, tryteEMPTY, PAGE_TRYTE);
-        // pde.address = (uint64_t)pt >> 12;
-        // pde.present = true;
-        // pde.readWrite = true;
-        // pd->entries[indexer.PT_i] = pde;
+        memset((uint8_t*)pt, tryteEMPTY, PAGE_TRYTE);
+        pde.address = (uint64_t)pt >> 12;
+        pde.present = true;
+        pde.readWrite = true;
+        pd->entries[indexer.PT_i] = pde;
     } else pt = (PAGE_TABLE*)((uint64_t)pde.address << 12);
-
+    
     // pde = pt->entries[indexer.P_i];
     // pde.address = (uint64_t)physicalMemory >> 12;
     // pde.present = true;

@@ -60,7 +60,7 @@ typedef enum {
 #define PAGE_BYTE 0x1000
 
 // Page size in trytes = 1820
-#define PAGE_TRYTE PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT
+#define PAGE_TRYTE (PAGE_BYTE * BYTE_TRIT / TRYTE_TRIT)
 
 // Tryte macro declaration
 #define __tryte(name) uint8_t name[TRYTE_BYTE]
