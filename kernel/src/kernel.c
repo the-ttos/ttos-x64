@@ -79,25 +79,25 @@ extern void _start(BOOT_INFO *b){
     lock_pages(&_kernelStart, kernelPages);
     
     PAGE_TABLE *pml4 = (PAGE_TABLE*)request_page(&r);
-    memset((uint8_t*)pml4, tryteEMPTY, PAGE_TRYTE);
+    BINARY_memset((uint8_t*)pml4, 0, PAGE_BYTE);
+    // memset((uint8_t*)pml4, tryteEMPTY, PAGE_TRYTE);
     PAGE_TABLE_MANAGER pageTableManager;
     init_page_table_manager(&pageTableManager, pml4);
 
-    print(&r, uint64_to_string(get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize) / PAGE_BYTE));
+    // for(uint64_t t = 0;
+    //     t < get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize);
+    //     t += PAGE_BYTE) {
+    //     map_memory(&r, &pageTableManager, (void*)t, (void*)t);
+    // }
 
-    for(uint64_t t = 0;
-        t < get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize);
-        t += PAGE_BYTE) {
-        map_memory(&r, &pageTableManager, (void*)t, (void*)t);
-    }
+    map_memory(&r, &pageTableManager, (void*)0, (void*)0);
+    map_memory(&r, &pageTableManager, (void*)0, (void*)0);
 
-    uint64_t fbBase = (uint64_t)bootInfo->framebuffer->address;
-    uint64_t fbSize = (uint64_t)bootInfo->framebuffer->size + PAGE_BYTE;
+    // uint64_t fbBase = (uint64_t)bootInfo->framebuffer->address;
+    // uint64_t fbSize = (uint64_t)bootInfo->framebuffer->size + PAGE_BYTE;
 
-    for(uint64_t t = fbBase; t < fbBase + fbSize; t += PAGE_BYTE) {
-        map_memory(&r, &pageTableManager, (void*)t, (void*)t);
-    }
-        
+    // for(uint64_t t = fbBase; t < fbBase + fbSize; t += PAGE_BYTE)
+    //     map_memory(&r, &pageTableManager, (void*)t, (void*)t);
 
     // asm("mov %0, %%cr3" : : "r" (pml4));
     // print(&r, "Hello\n");

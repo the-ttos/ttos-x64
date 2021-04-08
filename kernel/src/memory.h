@@ -108,3 +108,8 @@ void memset(__tryte_ptr(address), __tryte(value), uint64_t num) {
     address = tryte_a((__tryte_ret)address);
     for(uint64_t i = 0; i < num; i++) tryteset(address + i * 2, value);
 }
+
+void BINARY_memset(void *start, uint8_t value, uint64_t num) {
+    for(uint64_t i = 0; i < num; i++)
+        *(uint8_t*)((uint64_t)start + i) = value;
+}
