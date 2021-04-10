@@ -13,6 +13,7 @@
 #include "framebuffer.h"
 #endif
 
+// Boot information structure
 typedef struct {
 	FRAMEBUFFER *framebuffer;
 	PSF1_FONT *font;
@@ -21,4 +22,5 @@ typedef struct {
 	uint64_t mapDescriptorSize;
 } BOOT_INFO;
 
+// Global boot information
 BOOT_INFO *bootInfo;

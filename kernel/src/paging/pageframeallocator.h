@@ -8,11 +8,6 @@
 #include <stdint.h>
 #endif
 
-#ifndef BITMAP_H
-#define BITMAP_H
-#include "../bitmap.h"
-#endif
-
 #ifndef TRITMAP_H
 #define TRITMAP_H
 #include "../tritmap.h"
@@ -38,13 +33,14 @@
 #include <stdbool.h>
 #endif
 
+// Global pages variables
+bool initialized = false;
 uint64_t freeMemory;
 uint64_t reservedMemory;
 uint64_t usedMemory;
-bool initialized = false;
 TRITMAP pageTritmap;
 
-// Initialize the pages Tritmap
+// Pages Tritmap constructor
 void init_page_tritmap(size_t size, void *bufferAddress) {
     pageTritmap.size = size;
     pageTritmap.buffer = (uint8_t*)bufferAddress;
@@ -54,37 +50,37 @@ void init_page_tritmap(size_t size, void *bufferAddress) {
 // Free a page (set it's trit to tFALSE)
 void free_page(void *address) {
     uint64_t index = (uint64_t)address / PAGE_BYTE;
-    if(read_trit(pageTritmap.buffer, index) == tFALSE) return;
-    write_trit(pageTritmap.buffer, index, tFALSE);
-    freeMemory += PAGE_TRYTE;
-    usedMemory -= PAGE_TRYTE;
+    if(read_trit(&pageTritmap, index) == tFALSE) return;
+    if(!write_trit(&pageTritmap, index, tFALSE)) return;
+    freeMemory += PAGE_BYTE;
+    usedMemory -= PAGE_BYTE;
 }
 
 // Lock a page (set it's trit to tTRUE)
 void lock_page(void *address) {
     uint64_t index = (uint64_t)address / PAGE_BYTE;
-    if(read_trit(pageTritmap.buffer, index) == tTRUE) return;
-    write_trit(pageTritmap.buffer, index, tTRUE);
-    freeMemory -= PAGE_TRYTE;
-    usedMemory += PAGE_TRYTE;
+    if(read_trit(&pageTritmap, index) == tTRUE) return;
+    if(!write_trit(&pageTritmap, index, tTRUE)) return;
+    freeMemory -= PAGE_BYTE;
+    usedMemory += PAGE_BYTE;
 }
 
 // Unreserve a page (set it's trit to tFALSE)
 void unreserve_page(void *address) {
     uint64_t index = (uint64_t)address / PAGE_BYTE;
-    if(read_trit(pageTritmap.buffer, index) == tFALSE) return;
-    write_trit(pageTritmap.buffer, index, tFALSE);
-    freeMemory += PAGE_TRYTE;
-    reservedMemory -= PAGE_TRYTE;
+    if(read_trit(&pageTritmap, index) == tFALSE) return;
+    if(!write_trit(&pageTritmap, index, tFALSE)) return;
+    freeMemory += PAGE_BYTE;
+    reservedMemory -= PAGE_BYTE;
 }
 
 // Reserve a page (set it's trit to tUNKNOWN)
 void reserve_page(void *address) {
     uint64_t index = (uint64_t)address / PAGE_BYTE;
-    if(read_trit(pageTritmap.buffer, index) == tUNKNOWN) return;
-    write_trit(pageTritmap.buffer, index, tUNKNOWN);
-    freeMemory -= PAGE_TRYTE;
-    reservedMemory += PAGE_TRYTE;
+    if(read_trit(&pageTritmap, index) == tUNKNOWN) return;
+    if(!write_trit(&pageTritmap, index, tUNKNOWN)) return;
+    freeMemory -= PAGE_BYTE;
+    reservedMemory += PAGE_BYTE;
 }
 
 // Free multiple pages
@@ -114,10 +110,14 @@ void reserve_pages(void *address, uint64_t pageCount) {
 // Request an unused page and lock it
 void *request_page(RENDERER *R) {
     for(uint64_t i = 0; i < pageTritmap.size; i++) {
-        if(read_trit(pageTritmap.buffer, i) != tFALSE) continue;
+        if(read_trit(&pageTritmap, i) != tFALSE) continue;
         lock_page((void*)(i * PAGE_BYTE));
-        if(PAGE_TRYTE > freeMemory) print(R, uint64_to_string(freeMemory));
-        if(PAGE_TRYTE > freeMemory) print(R, " ");
+        write_trit(&pageTritmap, i, tTRUE);
+        if(read_trit(&pageTritmap, i) == tFALSE) {
+            print(R, "batata ");
+            print(R, uint64_to_string(pageTritmap.size));
+            print(R, "\n");
+        }
         return (void*)(i * PAGE_BYTE);
     }
     print(R, "NO PAGES AVAILABLE");
@@ -130,14 +130,15 @@ void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapD
     initialized = true;
     
     uint64_t mapEntries = mapSize / mapDescriptorSize;
+    
     void *largestFreeMemSeg = NULL;
     size_t largestFreeMemSegSize = 0;
     
     for(uint64_t i = 0; i < mapEntries; i++) {
         EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)map + (i * mapDescriptorSize));
-        if(desc->type == 7 && desc->pageCount > largestFreeMemSegSize) { // type = EfiConventionalMemory
+        if(desc->type == 7 && desc->pageCount * PAGE_BYTE > largestFreeMemSegSize) { // type = EfiConventionalMemory
             largestFreeMemSeg = desc->physicalAddress;
-            largestFreeMemSegSize = desc->pageCount;
+            largestFreeMemSegSize = desc->pageCount * PAGE_BYTE;
         }
     }
 
@@ -146,7 +147,7 @@ void read_efi_memory_map(EFI_MEMORY_DESCRIPTOR *map, size_t mapSize, size_t mapD
 
     init_page_tritmap(memorySize / PAGE_BYTE, largestFreeMemSeg);
 
-    lock_pages(pageTritmap.buffer, ceil(pageTritmap.size, PAGE_TRYTE));
+    lock_pages(pageTritmap.buffer, ceil(pageTritmap.size, PAGE_BYTE));
     
     for(uint32_t i = 0; i < mapEntries; i++) {
         EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)map + (i * mapDescriptorSize));

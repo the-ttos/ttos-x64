@@ -62,52 +62,52 @@ extern uint64_t _kernelStart;
 extern uint64_t _kernelEnd;
 
 extern void _start(BOOT_INFO *b){
+    // Boot information and Renderer
     bootInfo = b;
     RENDERER r = {bootInfo->framebuffer, ANCHOR, bootInfo->font, 0xfffbc531};
 
-    for(uint16_t i = 0; i < bootInfo->framebuffer->width * 4; i++)
-        for(uint16_t j = 0; j < bootInfo->framebuffer->height; j++)
-            *(uint8_t*)(i + (j * bootInfo->framebuffer->pixelsPerScanline * 4) + bootInfo->framebuffer->address) = 0x00000000;
-
+    // Get map descriptors and initialize tritmap
     uint64_t mapEntries = bootInfo->mapSize / bootInfo->mapDescriptorSize;
-
     read_efi_memory_map(bootInfo->map, bootInfo->mapSize, bootInfo->mapDescriptorSize);
 
+    // Lock kernel pages
     uint64_t kernelSize = (uint64_t)&_kernelEnd - (uint64_t)&_kernelStart;
     uint64_t kernelPages = ceil(kernelSize, PAGE_BYTE);
-
     lock_pages(&_kernelStart, kernelPages);
     
+    // Initialize pages structure
+    // =============================================================
+    // Pages are guaranteed to be tryte-aligned because PAGE_BYTE is
+    // originally divisible by 4 (0x1000).
+    // =============================================================
     PAGE_TABLE *pml4 = (PAGE_TABLE*)request_page(&r);
-    BINARY_memset((uint8_t*)pml4, 0, PAGE_BYTE);
-    // memset((uint8_t*)pml4, tryteEMPTY, PAGE_TRYTE);
-    PAGE_TABLE_MANAGER pageTableManager;
-    init_page_table_manager(&pageTableManager, pml4);
+    memset((uint8_t*)pml4, tryteEMPTY, PAGE_TRYTE);
+    PAGE_TABLE_MANAGER pageTableManager = (PAGE_TABLE_MANAGER){.pml4 = pml4};
 
-    // for(uint64_t t = 0;
-    //     t < get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize);
-    //     t += PAGE_BYTE) {
-    //     map_memory(&r, &pageTableManager, (void*)t, (void*)t);
-    // }
+    // Map pages
+    for(uint64_t t = 0;
+        t < get_memory_size(bootInfo->map, mapEntries, bootInfo->mapDescriptorSize);
+        t += PAGE_BYTE)
+        map_memory(&r, &pageTableManager, (void*)t, (void*)t);
 
-    map_memory(&r, &pageTableManager, (void*)0, (void*)0);
-    map_memory(&r, &pageTableManager, (void*)0, (void*)0);
+    // Lock frame buffer pages
+    uint64_t fbBase = (uint64_t)bootInfo->framebuffer->address;
+    uint64_t fbSize = (uint64_t)bootInfo->framebuffer->size + PAGE_BYTE;
+    lock_pages((void*)fbBase, ceil(fbSize, PAGE_BYTE));
 
-    // uint64_t fbBase = (uint64_t)bootInfo->framebuffer->address;
-    // uint64_t fbSize = (uint64_t)bootInfo->framebuffer->size + PAGE_BYTE;
+    // Map frame buffer pages
+    for(uint64_t t = fbBase; t < fbBase + fbSize; t += PAGE_BYTE)
+        map_memory(&r, &pageTableManager, (void*)t, (void*)t);
 
-    // for(uint64_t t = fbBase; t < fbBase + fbSize; t += PAGE_BYTE)
-    //     map_memory(&r, &pageTableManager, (void*)t, (void*)t);
+    // Apply mapping
+    asm("mov %0, %%cr3" : : "r" (pml4));
 
-    // asm("mov %0, %%cr3" : : "r" (pml4));
-    // print(&r, "Hello\n");
-
-    // map_memory(&pageTableManager, (void*)0x600000000, (void*)0x80000);
-
-    // uint64_t* test = (uint64_t*)0x600000000;
-    // *test = 26;
-
-    // print(&r, uint64_to_string(*test));
+    // Reset frame buffer
+    // =============================================================
+    // Binary functions are used because frame buffer is not 
+    // guaranteed to be tryte-aligned.
+    // =============================================================
+    memset_BINARY(b->framebuffer->address, 0, b->framebuffer->size);
 
     print(&r, "Free RAM: ");
     print(&r, uint64_to_string(get_free_RAM() / 1024));
@@ -143,27 +143,26 @@ extern void _start(BOOT_INFO *b){
     /*
     print(&r, "\n==================== BITMAP TESTS ====================\n");
     uint8_t buf[2];
-    write_bit(b, 7, true);
-    write_bit(b, 8, false);
-    write_bit(b, 9, true);
-    write_bit(b, 10, false);
-    write_bit(b, 11, false);
-    write_bit(b, 12, true);
+    write_bit(t, 7, true);
+    write_bit(t, 8, false);
+    write_bit(t, 9, true);
+    write_bit(t, 10, false);
+    write_bit(t, 11, false);
+    write_bit(t, 12, true);
     for(uint8_t i = 7; i < 13; i++) {
-        print(&r, uint64_to_string(read_bit(b, i)));
+        print(&r, uint64_to_string(read_bit(t, i)));
         print(&r, "\n");
     }
 
     print(&r, "\n==================== TRITMAP TESTS ====================\n");
-    __tryte_buffer(b, 2) = { 0 };
-    write_trit(b, 7, tTRUE);
-    write_trit(b, 8, tUNKNOWN);
-    write_trit(b, 9, tFALSE);
-    write_trit(b, 10, tUNKNOWN);
-    write_trit(b, 11, tUNKNOWN);
-    write_trit(b, 12, tTRUE);
-    for(uint8_t i = 7; i < 13; i++) {
-        print(&r, trit_to_bstring(read_trit(b, i)));
+    
+    write_trit(pageTritmap.buffer, 1022, tTRUE);
+    write_trit(pageTritmap.buffer, 1023, tTRUE);
+    write_trit(pageTritmap.buffer, 1024, tTRUE);
+    write_trit(pageTritmap.buffer, 1025, tTRUE);
+    write_trit(pageTritmap.buffer, 1026, tTRUE);
+    for(uint64_t i = 1022; i < 1027; i++) {
+        print(&r, trit_to_bstring(read_trit(pageTritmap.buffer, i)));
         print(&r, "\n");
     }
 

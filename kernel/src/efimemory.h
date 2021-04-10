@@ -3,6 +3,7 @@
 #include <stdint.h>
 #endif
 
+// EFI Memory Descriptor structure
 typedef struct {
     uint32_t type;
     void *physicalAddress;
@@ -11,6 +12,7 @@ typedef struct {
     uint64_t attributes;
 } EFI_MEMORY_DESCRIPTOR;
 
+// EFI Memory Type strings
 const char *efiMemoryTypeStrings[] = {
     "EfiReservedMemoryType",
     "EfiLoaderCode",
@@ -26,5 +28,5 @@ const char *efiMemoryTypeStrings[] = {
     "EfiMemoryMappedIO",
     "EfiMemoryMappedIOPortSpace",
     "EfiPalCode"
-    };
+};
 

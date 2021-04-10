@@ -3,6 +3,7 @@
 #include <stddef.h>
 #endif
 
+// Frame buffer structure
 typedef struct {
 	void *address;
 	size_t size;

@@ -3,16 +3,16 @@
 #include <stdint.h>
 #endif
 
-// Ceil function
+// Ceil macro
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
-// 2d point
+// 2D point
 typedef struct {
     unsigned x;
     unsigned y;
 } POINT;
 
-// Power function
+// Power
 uint64_t power_uint8(const uint8_t base, const uint8_t exponent) {
     uint64_t result = 1;
     for(uint8_t i = 0; i < exponent; i++)
@@ -20,7 +20,7 @@ uint64_t power_uint8(const uint8_t base, const uint8_t exponent) {
     return result;
 }
 
-// Ceil function
+// Ceil
 uint64_t ceil(const uint32_t x, const uint32_t y) {
     uint64_t z = (uint64_t)x;
     return (z + y - 1) / y;

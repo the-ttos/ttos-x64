@@ -2,6 +2,8 @@
     "files.associations": {
         "pageframeallocator.h": "c",
         "tritmap.h": "c",
-        "memory.h": "c"
+        "memory.h": "c",
+        "stdbool.h": "c",
+        "boot.h": "c"
     }
 }

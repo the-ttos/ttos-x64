@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #endif
 
+// Page Directory Entry structure (MMU)
 typedef struct {
     bool present: 1;
     bool readWrite: 1;
@@ -22,10 +23,7 @@ typedef struct {
     uint64_t address: 52;
 } PAGE_DIRECTORY_ENTRY;
 
-// typedef struct {
-//     PAGE_DIRECTORY_ENTRY entries[512];
-// } __attribute__ ((aligned (PAGE_BYTE))) PAGE_TABLE;
-
-typedef struct __attribute__ ((aligned (PAGE_BYTE))) {
+// Page Table structure
+typedef struct {
     PAGE_DIRECTORY_ENTRY entries[512];
-} PAGE_TABLE;
+} __attribute__ ((aligned (PAGE_BYTE))) PAGE_TABLE;

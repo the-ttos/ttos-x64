@@ -15,6 +15,7 @@
 
 #define ANCHOR (POINT){15, 15}
 
+// Renderer structure
 typedef struct {
     FRAMEBUFFER *target;
     POINT cursor;
@@ -22,6 +23,7 @@ typedef struct {
     unsigned color;
 } RENDERER;
 
+// Put a char on the screen
 void put_char(RENDERER *r, char chr, unsigned long xOff, unsigned long yOff) {
     unsigned *pixelPtr = (unsigned*)r->target->address;
     char *fontPtr = r->font->glyphs + (chr * r->font->header->size);
@@ -33,6 +35,7 @@ void put_char(RENDERER *r, char chr, unsigned long xOff, unsigned long yOff) {
     }
 }
 
+// Print a string to the screen
 void print(RENDERER *r, const char *str) {
     while(*str) {
         switch(*str) {

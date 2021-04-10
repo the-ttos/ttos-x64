@@ -8,12 +8,14 @@
 #include "math.h"
 #endif
 
+// Unbalanced trit
 typedef enum {
     TWA = 0b00,
     TWE = 0b01,
     TWI = 0b10
 } UTRIT;
 
+// Balanced trit
 typedef enum {
     tFALSE      = 0b00,
     tUNKNOWN    = 0b01,

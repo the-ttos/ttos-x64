@@ -23,122 +23,79 @@
 #include "pageframeallocator.h"
 #endif
 
+// Page Table Manager structure
 typedef struct {
     PAGE_TABLE *pml4;
 } PAGE_TABLE_MANAGER;
 
+// Page Table Manager constructor
 void init_page_table_manager(PAGE_TABLE_MANAGER *manager, PAGE_TABLE *address) {
     manager->pml4 = address;
 }
 
+// Map memory in bytes
+// =============================================================
+// Memory is not directly virtualized into ternary units because
+// 9 (trits) is not divisible by 8 (bits). This difference
+// causes an offset to happen and it's only normalized every 4 
+// bytes, which means that the only direct way of virtualizing
+// trytes would be mapping the memory in a 4:1 bytes proportion.
+// 
+// However, this would cause necessity of another conversion
+// process, since 4 bytes is equivalent to 3 trytes, therefore
+// non atomic. Instead, a binary PML4 structure is still used,
+// but tryte-alignment is enforced when writing or reading
+// trytes from memory.
+// =============================================================
 void map_memory(RENDERER *R, PAGE_TABLE_MANAGER *manager, void *virtualMemory, void *physicalMemory) {
     PAGE_MAP_INDEXER indexer;
     init_page_map_indexer(&indexer, (uint64_t)virtualMemory);
     PAGE_DIRECTORY_ENTRY pde;
 
+    // PML4
     pde = manager->pml4->entries[indexer.PDP_i];
     PAGE_TABLE *pdp;
     if(!pde.present) {
-        print(R, "PDE from pml4 DOESNT EXIST");
-        print(R, "\n");
         pdp = (PAGE_TABLE*)request_page(R);
-        BINARY_memset((uint8_t*)pdp, 0, PAGE_BYTE);
-        // memset((uint8_t*)pdp, tryteEMPTY, PAGE_TRYTE);
-        print(R, "new page address: ");
-        print(R, uint64_to_string((uint64_t)pdp));
-        print(R, "\n");
+        memset((uint8_t*)pdp, tryteEMPTY, PAGE_TRYTE);
         pde.address = (uint64_t)pdp >> 12;
-        print(R, "pde address: ");
-        print(R, uint64_to_string((uint64_t)pdp >> 12));
-        print(R, "\n");
         pde.present = true;
         pde.readWrite = true;
         manager->pml4->entries[indexer.PDP_i] = pde;
-        print(R, "pml4 address (pdp entry): ");
-        print(R, uint64_to_string((uint64_t)manager->pml4->entries[indexer.PDP_i].address));
-        print(R, "\n");
     } else { 
-        print(R, "PDE from pml4 EXISTS");
-        print(R, "\n");
-        print(R, "pde address: ");
-        print(R, uint64_to_string((uint64_t)pde.address));
-        print(R, "\n");
-        pdp = (PAGE_TABLE*)((uint64_t)pde.address << 12);
-        print(R, "pdp address: ");
-        print(R, uint64_to_string((uint64_t)pdp));
-        print(R, "\n");
+        pdp = (PAGE_TABLE*)((uint64_t)pde.address << 12); // 🤔
     }
 
+    // PML3
     pde = pdp->entries[indexer.PD_i];
-    print(R, "pde address (pdp entry): ");
-    print(R, uint64_to_string((uint64_t)pdp));
-    print(R, "\n");
     PAGE_TABLE *pd;
     if(!pde.present) {
-        print(R, "PDE from pdp DOESNT EXIST");
         pd = (PAGE_TABLE*)request_page(R);
-        BINARY_memset((uint8_t*)pd, 0, PAGE_BYTE);
-        // memset((uint8_t*)pd, tryteEMPTY, PAGE_TRYTE);
+        memset((uint8_t*)pd, tryteEMPTY, PAGE_TRYTE);
         pde.address = (uint64_t)pd >> 12;
         pde.present = true;
         pde.readWrite = true;
-        print(R, "pdp address entry before pde: ");
-        print(R, uint64_to_string((uint64_t)pdp->entries[indexer.PD_i].address));
-        print(R, "\n");
         pdp->entries[indexer.PD_i] = pde;
-        print(R, "pdp address entry after pde: ");
-        print(R, uint64_to_string((uint64_t)pdp->entries[indexer.PD_i].address));
-        print(R, "\n");
-    } else {
-        print(R, "PDE from pdp EXISTS");
-        print(R, "\n");
-        print(R, "pde address: ");
-        print(R, uint64_to_string((uint64_t)pde.address));
-        print(R, "\n");
-        pd = (PAGE_TABLE*)((uint64_t)pde.address << 12);
-        print(R, "pd: ");
-        print(R, uint64_to_string((uint64_t)pd));
-        print(R, "\n");
-    }
+    } else pd = (PAGE_TABLE*)((uint64_t)pde.address << 12);
 
-    // Quando descomenta o último memset ternário, o pd->entries da iteração 513 falha
-    // if((uint64_t)virtualMemory >= 512 * PAGE_BYTE) {
-    //     print(R, uint64_to_string((uint64_t)virtualMemory / PAGE_BYTE));
-    //     print(R, ": ");
-    //     print(R, uint64_to_string((uint64_t)pd->entries[0].address));
-    //     print(R, " ");
-    // }
-
+    // PML2
     pde = pd->entries[indexer.PT_i];
     PAGE_TABLE *pt;
     if(!pde.present) {
-        print(R, "PDE from pt DOES NOT EXIST");
-        print(R, "\n");
         pt = (PAGE_TABLE*)request_page(R);
-        BINARY_memset((uint8_t*)pt, 0, PAGE_BYTE);
-        // memset((uint8_t*)pt, tryteEMPTY, PAGE_TRYTE);
+        memset((uint8_t*)pt, tryteEMPTY, PAGE_TRYTE);
         pde.address = (uint64_t)pt >> 12;
         pde.present = true;
         pde.readWrite = true;
         pd->entries[indexer.PT_i] = pde;
-    } else { 
-        print(R, "PDE from pt EXISTS");
-        print(R, "\n");
-        print(R, "pde address: ");
-        print(R, uint64_to_string((uint64_t)pde.address));
-        print(R, "\n");
+    } else {
         pt = (PAGE_TABLE*)((uint64_t)pde.address << 12);
-        print(R, "pt: ");
-        print(R, uint64_to_string((uint64_t)pt));
-        print(R, "\n");
     }
 
+    // PML1
     pde = pt->entries[indexer.P_i];
     pde.address = (uint64_t)physicalMemory >> 12;
     pde.present = true;
     pde.readWrite = true;
-
-    // print(R, uint64_to_string((uint64_t)manager->pml4->entries[indexer.PDP_i].address));
-    // print(R, "\n");
-    pt->entries[indexer.P_i] = pde; // Comentar essa linha faz funcionar
+    pt->entries[indexer.P_i] = pde; 
 }

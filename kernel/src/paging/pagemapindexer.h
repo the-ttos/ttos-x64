@@ -3,6 +3,7 @@
 #include <stdint.h>
 #endif
 
+// Page Map Indexer structure
 typedef struct {
     uint64_t PDP_i;
     uint64_t PD_i;
@@ -10,6 +11,7 @@ typedef struct {
     uint64_t P_i;
 } PAGE_MAP_INDEXER;
 
+// Page Map Indexer constructor
 void init_page_map_indexer(PAGE_MAP_INDEXER *indexer, uint64_t virtualAddress) {
     virtualAddress >>= 12;
     indexer->P_i = virtualAddress & 0x1ff;

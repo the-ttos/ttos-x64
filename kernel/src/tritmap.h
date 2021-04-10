@@ -13,6 +13,11 @@
 #include "tryte.h"
 #endif
 
+#ifndef STDBOOL_H
+#define STDBOOL_H
+#include <stdbool.h>
+#endif
+
 // Tritmap struct
 typedef struct {
     size_t size;
@@ -20,16 +25,18 @@ typedef struct {
 } TRITMAP;
 
 // Read trit from tritmap
-BTRIT read_trit(__tryte_ptr(t), uint64_t index) {
-    const uint8_t offset = __trit_offset(index);
-    return (BTRIT)((t[__byte_of_trit(index)]
+BTRIT read_trit(TRITMAP *t, uint64_t index) {
+    const uint64_t offset = __trit_offset(index);
+    return (BTRIT)((t->buffer[__byte_of_trit(index)]
         & 0b11 << offset) >> offset);
 }
 
 // Write trit to tritmap at index
-void write_trit(__tryte_ptr(t), uint64_t index, BTRIT trit) {
-    const uint8_t offset = __trit_offset(index);
-    const uint8_t byte = __byte_of_trit(index);
-    t[byte] &= ~(0b11 << offset);
-    t[byte] |= (trit & 0b11) << offset;
+bool write_trit(TRITMAP *t, uint64_t index, BTRIT trit) {
+    if(index >= t->size) return false;
+    const uint64_t offset = __trit_offset(index);
+    const uint64_t byte = __byte_of_trit(index);
+    t->buffer[byte] &= ~(0b11 << offset);
+    t->buffer[byte] |= (trit & 0b11) << offset;
+    return true;
 }
