@@ -38,6 +38,7 @@ bool initialized = false;
 uint64_t freeMemory;
 uint64_t reservedMemory;
 uint64_t usedMemory;
+uint64_t pageTritmapIndex = 0;
 TRITMAP pageTritmap;
 
 // Pages Tritmap constructor
@@ -54,6 +55,7 @@ void free_page(void *address) {
     if(!write_trit(&pageTritmap, index, tFALSE)) return;
     freeMemory += PAGE_BYTE;
     usedMemory -= PAGE_BYTE;
+    if(pageTritmapIndex > index) pageTritmapIndex = index;
 }
 
 // Lock a page (set it's trit to tTRUE)
@@ -72,6 +74,7 @@ void unreserve_page(void *address) {
     if(!write_trit(&pageTritmap, index, tFALSE)) return;
     freeMemory += PAGE_BYTE;
     reservedMemory -= PAGE_BYTE;
+    if(pageTritmapIndex > index) pageTritmapIndex = index;
 }
 
 // Reserve a page (set it's trit to tUNKNOWN)
@@ -108,19 +111,13 @@ void reserve_pages(void *address, uint64_t pageCount) {
 }
 
 // Request an unused page and lock it
-void *request_page(RENDERER *R) {
-    for(uint64_t i = 0; i < pageTritmap.size; i++) {
-        if(read_trit(&pageTritmap, i) != tFALSE) continue;
-        lock_page((void*)(i * PAGE_BYTE));
-        write_trit(&pageTritmap, i, tTRUE);
-        if(read_trit(&pageTritmap, i) == tFALSE) {
-            print(R, "batata ");
-            print(R, uint64_to_string(pageTritmap.size));
-            print(R, "\n");
-        }
-        return (void*)(i * PAGE_BYTE);
+void *request_page() {
+    for(; pageTritmapIndex < pageTritmap.size; pageTritmapIndex++) {
+        if(read_trit(&pageTritmap, pageTritmapIndex) != tFALSE) continue;
+        lock_page((void*)(pageTritmapIndex * PAGE_BYTE));
+        write_trit(&pageTritmap, pageTritmapIndex, tTRUE);
+        return (void*)(pageTritmapIndex * PAGE_BYTE);
     }
-    print(R, "NO PAGES AVAILABLE");
     return NULL;
 }
 
