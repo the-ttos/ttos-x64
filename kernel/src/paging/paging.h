@@ -8,6 +8,9 @@
 #include <stdbool.h>
 #endif
 
+// Page size in bytes = 4096
+#define PAGE_BYTE 0x1000
+
 // Page Directory Entry Enum
 typedef enum {
     PDE_PRESENT = 0,
@@ -32,7 +35,7 @@ typedef struct {
 // Page Table structure
 typedef struct {
     PAGE_DIRECTORY_ENTRY entries[512];
-} __attribute__ ((aligned (PAGE_BYTE))) PAGE_TABLE;
+}__attribute__((aligned(PAGE_BYTE))) PAGE_TABLE;
 
 // Set flag on Page Directory Entry
 void set_flag(PAGE_DIRECTORY_ENTRY *pageDirectoryEntry, PAGE_DIRECTORY_ENTRY_ENUM flag, bool enabled) {

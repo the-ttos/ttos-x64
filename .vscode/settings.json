@@ -4,6 +4,10 @@
         "tritmap.h": "c",
         "memory.h": "c",
         "stdbool.h": "c",
-        "boot.h": "c"
+        "boot.h": "c",
+        "tryte.h": "c",
+        "framebuffer.h": "c",
+        "type_traits": "cpp",
+        "cmath": "cpp"
     }
 }

@@ -58,12 +58,41 @@
 #include "boot.h"
 #endif
 
+#ifndef GDT_H
+#define GDT_H
+#include "gdt/gdt.h"
+#endif
+
+#ifndef IDT_H
+#define IDT_H
+#include "interrupts/idt.h"
+#endif
+
+#ifndef INTERRUPTS_H
+#define INTERRUPTS_H
+#include "interrupts/interrupts.h"
+#endif
+
+
 extern uint64_t _kernelStart;
 extern uint64_t _kernelEnd;
 
 typedef struct {
     PAGE_TABLE_MANAGER pageTableManager;
 } KERNEL_INFO;
+
+IDTR idtr;
+void prepare_interrupts() {
+    idtr.limit = 0x0fff;
+    idtr.offset = (uint64_t)request_page();
+
+    IDT_DESC_ENTRY *int_pageFault = (IDT_DESC_ENTRY*)(idtr.offset + 0xe * sizeof(IDT_DESC_ENTRY));
+    set_offset(int_pageFault, (uint64_t)page_fault_handler);
+    int_pageFault->type_attr = IDT_TA_INTERRUPT_GATE;
+    int_pageFault->selector = 0x08;
+
+    asm("lidt %0" :: "m" (idtr));
+}
 
 PAGE_TABLE_MANAGER prepare_memory(BOOT_INFO *bootInfo) {
     // Get map descriptors and initialize tritmap
@@ -106,5 +135,25 @@ PAGE_TABLE_MANAGER prepare_memory(BOOT_INFO *bootInfo) {
 }
 
 KERNEL_INFO start_kernel(BOOT_INFO *bootInfo) {
-    KERNEL_INFO kernelInfo = { .pageTableManager = prepare_memory(bootInfo) };
+    
+    // Make GDT descriptor and load GDT
+    GDT_DESCRIPTOR gdtDescriptor = {
+        .size = sizeof(GDT) - 1,
+        .offset = (uint64_t)&defaultGDT
+    };
+    LoadGDT(&gdtDescriptor);
+
+    // Initialize memory
+    KERNEL_INFO kernelInfo = {
+        .pageTableManager = prepare_memory(bootInfo)
+    };
+
+    // Reset frame buffer
+    // =============================================================
+    //  Binary functions are used because frame buffer is not 
+    //  guaranteed to be tryte-aligned.
+    // =============================================================
+    memset_BINARY(bootInfo->framebuffer->address, 0, bootInfo->framebuffer->size);
+
+    return kernelInfo;
 }

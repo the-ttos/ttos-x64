@@ -5,29 +5,33 @@
 
 /*
 
-    d888888b d8888b. d888888b .d8888. d88888b  .o88b. d888888b 
-    `~~88~~' 88  `8D   `88'   88'  YP 88'     d8P  Y8 `~~88~~' 
-       88    88oobY'    88    `8bo.   88ooooo 8P         88    
-       88    88`8b      88      `Y8b. 88~~~~~ 8b         88    
-       88    88 `88.   .88.   db   8D 88.     Y8b  d8    88    
-       YP    88   YD Y888888P `8888Y' Y88888P  `Y88P'    YP    
-
+        888            d8b                            888    
+        888            Y8P                            888    
+        888                                           888    
+        888888 888d888 888 .d8888b   .d88b.   .d8888b 888888 
+        888    888P"   888 88K      d8P  Y8b d88P"    888    
+        888    888     888 "Y8888b. 88888888 888      888    
+        Y88b.  888     888      X88 Y8b.     Y88b.    Y88b.  
+         "Y888 888     888  88888P'  "Y8888   "Y8888P  "Y888 
+                                                      
 */  
 
 extern void _start(BOOT_INFO *bootInfo){
+    // Start kernel
     KERNEL_INFO kernelInfo = start_kernel(bootInfo);
     
     // Renderer
-    RENDERER r = {bootInfo->framebuffer, ANCHOR, bootInfo->font, 0xfffbc531};
+    renderer = (RENDERER) {
+        .target = bootInfo->framebuffer,
+        .cursor = ANCHOR,
+        .font = bootInfo->font,
+        .color = 0xfffbc531
+    };
 
-    // Reset frame buffer
-    // =============================================================
-    //  Binary functions are used because frame buffer is not 
-    //  guaranteed to be tryte-aligned.
-    // =============================================================
-    memset_BINARY(bootInfo->framebuffer->address, 0, bootInfo->framebuffer->size);
+    print(&renderer, "Kernel initialized.\n");
 
-    print(&r, "Kernel initialized.\n");
+    int *test = (int*)0x8000000000000;
+    *test = 2;
 
     while(true);
 }

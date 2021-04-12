@@ -22,6 +22,8 @@ typedef struct {
     PSF1_FONT *font;
     unsigned color;
 } RENDERER;
+RENDERER renderer;
+
 
 // Put a char on the screen
 void put_char(RENDERER *r, char chr, unsigned long xOff, unsigned long yOff) {
