@@ -8,8 +8,8 @@
 
 // 2D point
 typedef struct {
-    unsigned x;
-    unsigned y;
+    uint32_t x;
+    uint32_t y;
 } POINT;
 
 // Power

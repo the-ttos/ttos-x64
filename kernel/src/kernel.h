@@ -83,6 +83,7 @@ typedef struct {
 
 IDTR idtr;
 void prepare_interrupts() {
+    // Initialize IDTR
     idtr.limit = 0x0fff;
     idtr.offset = (uint64_t)request_page();
 
@@ -91,7 +92,7 @@ void prepare_interrupts() {
     int_pageFault->type_attr = IDT_TA_INTERRUPT_GATE;
     int_pageFault->selector = 0x08;
 
-    asm("lidt %0" :: "m" (idtr));
+    asm("lidt %0" : : "m" (idtr));
 }
 
 PAGE_TABLE_MANAGER prepare_memory(BOOT_INFO *bootInfo) {
@@ -135,7 +136,6 @@ PAGE_TABLE_MANAGER prepare_memory(BOOT_INFO *bootInfo) {
 }
 
 KERNEL_INFO start_kernel(BOOT_INFO *bootInfo) {
-    
     // Make GDT descriptor and load GDT
     GDT_DESCRIPTOR gdtDescriptor = {
         .size = sizeof(GDT) - 1,
@@ -147,6 +147,9 @@ KERNEL_INFO start_kernel(BOOT_INFO *bootInfo) {
     KERNEL_INFO kernelInfo = {
         .pageTableManager = prepare_memory(bootInfo)
     };
+
+    // Initialize interrupts
+    prepare_interrupts();
 
     // Reset frame buffer
     // =============================================================

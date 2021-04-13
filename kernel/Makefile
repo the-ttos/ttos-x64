@@ -32,10 +32,10 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@ mkdir -p $(@D)
 	$(CC) -mno-red-zone -mgeneral-regs-only -ffreestanding -c $^ -o $@
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
-	@ echo !==== COMPILING $^
-	@ mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c $^ -o $@
+# $(OBJDIR)/%.o: $(SRCDIR)/%.c
+# 	@ echo !==== COMPILING $^
+# 	@ mkdir -p $(@D)
+# 	$(CC) $(CFLAGS) -c $^ -o $@
 
 $(OBJDIR)/%_asm.o: $(SRCDIR)/%.asm
 	@ echo !==== COMPILING $^
